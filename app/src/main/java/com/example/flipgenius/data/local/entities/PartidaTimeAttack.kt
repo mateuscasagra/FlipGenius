@@ -1,9 +1,11 @@
+package com.example.flipgenius.data.local.entities
+
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 
-@Entity(tableName = "partidas_time_Attack")
+@Entity(tableName = "partidas_time_attack")
 
 data class PartidaTimeAttack(
     @PrimaryKey(autoGenerate = true)

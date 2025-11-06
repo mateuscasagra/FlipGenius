@@ -1,8 +1,8 @@
 package com.example.flipgenius.data.repository
 
-import PartidaTimeAttack
-import TimeAttackDao
 import android.util.Log
+import com.example.flipgenius.data.local.dao.TimeAttackDao
+import com.example.flipgenius.data.local.entities.PartidaTimeAttack
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
