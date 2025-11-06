@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "163596816649",
+    "firebase_url": "https://flipgenius-9f53a-default-rtdb.firebaseio.com",
+    "project_id": "flipgenius-9f53a",
+    "storage_bucket": "flipgenius-9f53a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:163596816649:android:b64b1d82a2bd91e93fc3d8",
+        "android_client_info": {
+          "package_name": "com.example.flipgenius"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_aAQ_e43_FRcaVnwURw9N2FA3l79TDSo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
