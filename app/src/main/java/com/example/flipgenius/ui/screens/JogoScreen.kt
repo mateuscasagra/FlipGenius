@@ -17,12 +17,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.flipgenius.ui.components.CartaComponent
 import com.example.flipgenius.ui.viewmodels.JogoViewModel
 
 @Composable
 fun JogoScreen(
-    viewModel: JogoViewModel = viewModel()
+    viewModel: JogoViewModel = viewModel(),
+    navController: NavHostController
 ) {
     val cartas by viewModel.cartas.collectAsState()
     val pontuacao by viewModel.pontuacao.collectAsState()

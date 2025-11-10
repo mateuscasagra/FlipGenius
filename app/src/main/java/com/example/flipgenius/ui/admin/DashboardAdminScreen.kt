@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.flipgenius.ui.theme.FlipGeniusTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,7 +21,8 @@ import com.example.flipgenius.ui.theme.FlipGeniusTheme
 fun DashboardAdminScreen(
     onAddThemeClick: () -> Unit = {},
     onEditThemeClick: (String) -> Unit = {},
-    onDeleteThemeClick: (String) -> Unit = {}
+    onDeleteThemeClick: (String) -> Unit = {},
+    navController: NavHostController
 ) {
 
     // Quando o backend estiver pronto, esta lista virá do ViewModel
@@ -90,6 +92,6 @@ private fun TemaAdminItem(
 @Composable
 fun DashboardAdminScreenPreview() {
     FlipGeniusTheme {
-        DashboardAdminScreen()
+        DashboardAdminScreen(navController = navController)
     }
 }

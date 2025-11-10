@@ -8,13 +8,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.flipgenius.ui.theme.FlipGeniusTheme
 
 @Composable
 fun LoginScreen(
     onUserLoginClick: (String, String) -> Unit = { _, _ -> }, // O que fazer ao clicar em "Entrar" (Usuário)
     onAdminLoginClick: (String, String) -> Unit = { _, _ -> }, // O que fazer ao clicar em "Entrar" (Admin)
-    onNavigateToRegister: () -> Unit = {} // O que fazer ao clicar em "Cadastre-se"
+    onNavigateToRegister: () -> Unit = {}, // O que fazer ao clicar em "Cadastre-se"
+    navController: NavHostController
 ) {
 
     // Controla qual aba está selecionada (0 = Usuário, 1 = Admin)
@@ -103,6 +105,6 @@ fun LoginScreen(
 fun LoginScreenPreview() {
 
     FlipGeniusTheme {
-        LoginScreen()
+        LoginScreen(navController = navController)
     }
 }
