@@ -12,11 +12,10 @@ import com.example.flipgenius.ui.theme.FlipGeniusTheme
 
 @Composable
 fun RegisterScreen(
-    onRegisterClick: (String, String, String) -> Unit = { _, _, _ -> },
+    onRegisterClick: (String, String) -> Unit = { _, _ -> },
     onNavigateToLogin: () -> Unit = {}
 ) {
     var nome by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
@@ -34,15 +33,6 @@ fun RegisterScreen(
             value = nome,
             onValueChange = { nome = it },
             label = { Text("Nome de usuário") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -71,7 +61,7 @@ fun RegisterScreen(
         Button(
             onClick = {
                 // (Aqui entrará a lógica de validação)
-                onRegisterClick(nome, email, password)
+                onRegisterClick(nome, password)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -84,9 +74,6 @@ fun RegisterScreen(
     }
 }
 
-/**
- * Preview para ver a tela no modo "Design" ou "Split"
- */
 @Preview(showBackground = true)
 @Composable
 fun RegisterScreenPreview() {
