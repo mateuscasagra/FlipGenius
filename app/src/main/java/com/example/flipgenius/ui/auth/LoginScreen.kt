@@ -20,7 +20,7 @@ fun LoginScreen(
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Usuário", "Admin")
 
-    var emailOrUser by remember { mutableStateOf("") }
+    var user by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     Column(
@@ -36,7 +36,7 @@ fun LoginScreen(
                     selected = selectedTabIndex == index,
                     onClick = {
                         selectedTabIndex = index
-                        emailOrUser = ""
+                        user = ""
                         password = ""
                     },
                     text = { Text(title) }
@@ -47,16 +47,16 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         val title = if (selectedTabIndex == 0) "Login do Jogador" else "Acesso Admin"
-        val emailLabel = if (selectedTabIndex == 0) "Email" else "Usuário Admin"
+        val userLabel = if (selectedTabIndex == 0) "Nome de Usuário" else "Usuário Admin"
 
         Text(title, style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
 
 
         OutlinedTextField(
-            value = emailOrUser,
-            onValueChange = { emailOrUser = it },
-            label = { Text(emailLabel) },
+            value = user,
+            onValueChange = { user = it },
+            label = { Text(userLabel) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -76,9 +76,9 @@ fun LoginScreen(
         Button(
             onClick = {
                 if (selectedTabIndex == 0) {
-                    onUserLoginClick(emailOrUser, password)
+                    onUserLoginClick(user, password)
                 } else {
-                    onAdminLoginClick(emailOrUser, password)
+                    onAdminLoginClick(user, password)
                 }
             },
             modifier = Modifier.fillMaxWidth()
