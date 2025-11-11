@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.flipgenius.ui.theme.FlipGeniusTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,11 +20,8 @@ import com.example.flipgenius.ui.theme.FlipGeniusTheme
 fun DashboardAdminScreen(
     onAddThemeClick: () -> Unit = {},
     onEditThemeClick: (String) -> Unit = {},
-    onDeleteThemeClick: (String) -> Unit = {},
-    navController: NavHostController
+    onDeleteThemeClick: (String) -> Unit = {}
 ) {
-
-    // Quando o backend estiver pronto, esta lista virá do ViewModel
     val fakeThemeList = listOf(
         "Animais" to "🐶🐱🐭🐹🐰🦊🐻🐼",
         "Frutas" to "🍎🍌🍇🍓🍉🍒🍑🍍",
@@ -44,8 +40,6 @@ fun DashboardAdminScreen(
             }
         }
     ) { paddingValues ->
-
-        //  Lista de Temas
         LazyColumn(
             modifier = Modifier.padding(paddingValues)
         ) {
@@ -73,11 +67,9 @@ private fun TemaAdminItem(
         supportingContent = { Text(emojisPreview) },
         trailingContent = {
             Row {
-                // Botão de Editar
                 IconButton(onClick = onEdit) {
                     Icon(Icons.Default.Edit, contentDescription = "Editar Tema")
                 }
-                // Botão de Deletar
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Default.Delete, contentDescription = "Deletar Tema")
                 }
@@ -87,11 +79,10 @@ private fun TemaAdminItem(
     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun DashboardAdminScreenPreview() {
     FlipGeniusTheme {
-        DashboardAdminScreen(navController = navController)
+        DashboardAdminScreen()
     }
 }
