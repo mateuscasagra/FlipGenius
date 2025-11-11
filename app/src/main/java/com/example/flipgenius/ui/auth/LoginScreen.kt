@@ -8,18 +8,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.flipgenius.ui.theme.FlipGeniusTheme
 
 @Composable
 fun LoginScreen(
-    onUserLoginClick: (String, String) -> Unit = { _, _ -> }, // O que fazer ao clicar em "Entrar" (Usuário)
-    onAdminLoginClick: (String, String) -> Unit = { _, _ -> }, // O que fazer ao clicar em "Entrar" (Admin)
-    onNavigateToRegister: () -> Unit = {}, // O que fazer ao clicar em "Cadastre-se"
-    navController: NavHostController
+    onUserLoginClick: (String, String) -> Unit = { _, _ -> },
+    onAdminLoginClick: (String, String) -> Unit = { _, _ -> },
+    onNavigateToRegister: () -> Unit = {}
 ) {
 
-    // Controla qual aba está selecionada (0 = Usuário, 1 = Admin)
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Usuário", "Admin")
 
@@ -39,7 +36,6 @@ fun LoginScreen(
                     selected = selectedTabIndex == index,
                     onClick = {
                         selectedTabIndex = index
-                        // Limpa os campos quando trocar de aba
                         emailOrUser = ""
                         password = ""
                     },
@@ -72,7 +68,7 @@ fun LoginScreen(
             label = { Text("Senha") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            visualTransformation = PasswordVisualTransformation() // Esconde a senha
+            visualTransformation = PasswordVisualTransformation()
         )
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -90,7 +86,6 @@ fun LoginScreen(
             Text("Entrar")
         }
 
-        // Botão de Cadastro só aparece na aba "Usuário
         if (selectedTabIndex == 0) {
             TextButton(onClick = onNavigateToRegister) {
                 Text("Não tem conta? Cadastre-se")
@@ -105,6 +100,6 @@ fun LoginScreen(
 fun LoginScreenPreview() {
 
     FlipGeniusTheme {
-        LoginScreen(navController = navController)
+        LoginScreen()
     }
 }
