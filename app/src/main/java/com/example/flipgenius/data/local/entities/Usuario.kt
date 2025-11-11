@@ -1,3 +1,5 @@
+package com.example.flipgenius.data.local.entities
+
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
