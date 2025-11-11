@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.flipgenius" />
+                  <option name="mobileSdkAppId" value="1:163596816649:android:b64b1d82a2bd91e93fc3d8" />
+                  <option name="projectId" value="flipgenius-9f53a" />
+                  <option name="projectNumber" value="163596816649" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
