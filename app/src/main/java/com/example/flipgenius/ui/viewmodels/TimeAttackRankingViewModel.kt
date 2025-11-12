@@ -2,6 +2,7 @@ package com.example.flipgenius.ui.viewmodels
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+<<<<<<< HEAD
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModelProvider
 import com.example.flipgenius.data.local.AppDatabase
@@ -33,10 +34,29 @@ class TimeAttackRankingViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), RankingUiState.Loading)
 
     fun selecionarTema(tema: String) {
+=======
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
+/**
+ * Stub simples do ViewModel de Ranking para permitir compilação
+ * enquanto o repositório de Time Attack não está integrado.
+ */
+class TimeAttackRankingViewModel : ViewModel() {
+    private val _ranking = MutableStateFlow<List<String>>(emptyList())
+    val ranking: StateFlow<List<String>> = _ranking.asStateFlow()
+
+    private val _temaSelecionado = MutableStateFlow<String?>(null)
+    val temaSelecionado: StateFlow<String?> = _temaSelecionado.asStateFlow()
+
+    fun selecionarTema(tema: String?) {
+>>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
         _temaSelecionado.value = tema
     }
 
     fun clearHistory() {
+<<<<<<< HEAD
         viewModelScope.launch { repository.deleteAllPartidas() }
     }
 
@@ -49,5 +69,8 @@ class TimeAttackRankingViewModel(
                 return TimeAttackRankingViewModel(repo) as T
             }
         }
+=======
+        _ranking.value = emptyList()
+>>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
     }
 }
