@@ -1,31 +1,46 @@
 package com.example.flipgenius.data.repository
 
-import android.content.Context
-import com.example.flipgenius.data.local.AppDatabase
-import com.example.flipgenius.data.local.dao.ConfigJogadorDao
 import com.example.flipgenius.data.local.entities.ConfigJogador
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Base64
 
 /**
- * Repositório para ConfigJogador, com validações simples e hashing de senha.
+ * Repositório para ConfigJogador usando Firebase Firestore.
+ * - CRUD completo via Firestore
+ * - Erros específicos de conexão tratados
+ * - Listener em tempo real via snapshot listener
  */
 class ConfigRepository private constructor(
-    private val dao: ConfigJogadorDao
+    private val firestore: FirebaseFirestore
 ) {
+    private val collection = firestore.collection("configJogador")
 
-    suspend fun obterPorId(id: Long): ConfigJogador? = withContext(Dispatchers.IO) { dao.getById(id) }
-
-    suspend fun obterPorNome(nome: String): ConfigJogador? = withContext(Dispatchers.IO) { dao.getByNome(nome) }
+    suspend fun obterPorNome(nome: String): ConfigJogador? = withContext(Dispatchers.IO) {
+        try {
+            val doc = collection.document(nome).get().await()
+            if (!doc.exists()) return@withContext null
+            doc.toConfig()
+        } catch (e: FirebaseNetworkException) {
+            throw e
+        } catch (e: FirebaseFirestoreException) {
+            throw e
+        }
+    }
 
     suspend fun criarOuObter(nome: String, senha: String): ConfigJogador = withContext(Dispatchers.IO) {
-        val existente = dao.getByNome(nome)
-        if (existente != null) return@withContext existente
         validarNome(nome)
         validarSenha(nova = senha)
+        val existente = obterPorNome(nome)
+        if (existente != null) return@withContext existente
         val salt = gerarSalt()
         val hash = hashPassword(senha, salt)
         val now = System.currentTimeMillis()
@@ -37,42 +52,51 @@ class ConfigRepository private constructor(
             dataCriacao = now,
             dataAtualizacao = now
         )
-        val id = dao.insert(novo)
-        dao.getById(id)!!
+        collection.document(nome).set(novo.toMap()).await()
+        novo
     }
 
-    suspend fun atualizarNome(id: Long, novoNome: String): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun validarLogin(nome: String, senha: String): Boolean = withContext(Dispatchers.IO) {
+        val cfg = obterPorNome(nome) ?: return@withContext false
+        val candidate = hashPassword(senha, cfg.senhaSalt)
+        candidate == cfg.senhaHash
+    }
+
+    suspend fun atualizarNome(antigoNome: String, novoNome: String): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             validarNome(novoNome)
-            val config = dao.getById(id) ?: return@withContext Result.failure(IllegalArgumentException("Usuário não encontrado"))
-            if (dao.getByNome(novoNome) != null && config.nomeUsuario != novoNome) {
-                Result.failure(IllegalStateException("Nome de usuário já existe"))
-            } else {
-                dao.update(config.copy(nomeUsuario = novoNome, dataAtualizacao = System.currentTimeMillis()))
-                Result.success(Unit)
-            }
+            val existenteNovo = obterPorNome(novoNome)
+            if (existenteNovo != null) return@withContext Result.failure(IllegalStateException("Nome de usuário já existe"))
+            val atual = obterPorNome(antigoNome) ?: return@withContext Result.failure(IllegalArgumentException("Usuário não encontrado"))
+            val atualizado = atual.copy(
+                nomeUsuario = novoNome,
+                dataAtualizacao = System.currentTimeMillis()
+            )
+            // Firestore não renomeia doc; copiar novo e apagar antigo
+            collection.document(novoNome).set(atualizado.toMap()).await()
+            collection.document(antigoNome).delete().await()
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    suspend fun trocarSenha(id: Long, senhaAtual: String, novaSenha: String): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun trocarSenha(nome: String, senhaAtual: String, novaSenha: String): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             validarSenha(nova = novaSenha)
-            val config = dao.getById(id) ?: return@withContext Result.failure(IllegalArgumentException("Usuário não encontrado"))
+            val config = obterPorNome(nome) ?: return@withContext Result.failure(IllegalArgumentException("Usuário não encontrado"))
             val atualHash = hashPassword(senhaAtual, config.senhaSalt)
             if (atualHash != config.senhaHash) {
                 Result.failure(IllegalArgumentException("Senha atual incorreta"))
             } else {
                 val novoSalt = gerarSalt()
                 val novoHash = hashPassword(novaSenha, novoSalt)
-                dao.update(
-                    config.copy(
-                        senhaHash = novoHash,
-                        senhaSalt = novoSalt,
-                        dataAtualizacao = System.currentTimeMillis()
-                    )
+                val atualizado = config.copy(
+                    senhaHash = novoHash,
+                    senhaSalt = novoSalt,
+                    dataAtualizacao = System.currentTimeMillis()
                 )
+                collection.document(nome).set(atualizado.toMap()).await()
                 Result.success(Unit)
             }
         } catch (e: Exception) {
@@ -80,25 +104,41 @@ class ConfigRepository private constructor(
         }
     }
 
-    suspend fun atualizarTema(id: Long, tema: String): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun atualizarTema(nome: String, tema: String): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             if (tema.isBlank()) return@withContext Result.failure(IllegalArgumentException("Tema inválido"))
-            val config = dao.getById(id) ?: return@withContext Result.failure(IllegalArgumentException("Usuário não encontrado"))
-            dao.update(config.copy(temaPreferido = tema, dataAtualizacao = System.currentTimeMillis()))
+            val config = obterPorNome(nome) ?: return@withContext Result.failure(IllegalArgumentException("Usuário não encontrado"))
+            collection.document(nome)
+                .update(mapOf("temaPreferido" to tema, "dataAtualizacao" to System.currentTimeMillis()))
+                .await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    suspend fun deletarConta(id: Long): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun deletarConta(nome: String): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
-            val config = dao.getById(id) ?: return@withContext Result.failure(IllegalArgumentException("Usuário não encontrado"))
-            dao.delete(config)
+            collection.document(nome).delete().await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    fun observarConfig(nome: String): Flow<ConfigJogador?> = callbackFlow {
+        val reg = collection.document(nome).addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                trySend(null)
+                return@addSnapshotListener
+            }
+            if (snapshot != null && snapshot.exists()) {
+                trySend(snapshot.toConfig())
+            } else {
+                trySend(null)
+            }
+        }
+        awaitClose { reg.remove() }
     }
 
     private fun validarNome(nome: String) {
@@ -123,10 +163,30 @@ class ConfigRepository private constructor(
         return Base64.getEncoder().encodeToString(digest)
     }
 
+    private fun Map<String, Any>.toConfig(): ConfigJogador = ConfigJogador(
+        nomeUsuario = this["nomeUsuario"] as String,
+        senhaHash = this["senhaHash"] as String,
+        senhaSalt = this["senhaSalt"] as String,
+        temaPreferido = (this["temaPreferido"] as? String) ?: "padrao",
+        dataCriacao = (this["dataCriacao"] as? Number)?.toLong() ?: System.currentTimeMillis(),
+        dataAtualizacao = (this["dataAtualizacao"] as? Number)?.toLong() ?: System.currentTimeMillis()
+    )
+
+    private fun com.google.firebase.firestore.DocumentSnapshot.toConfig(): ConfigJogador =
+        (data ?: emptyMap()).toConfig()
+
+    private fun ConfigJogador.toMap(): Map<String, Any> = mapOf(
+        "nomeUsuario" to nomeUsuario,
+        "senhaHash" to senhaHash,
+        "senhaSalt" to senhaSalt,
+        "temaPreferido" to temaPreferido,
+        "dataCriacao" to dataCriacao,
+        "dataAtualizacao" to dataAtualizacao
+    )
+
     companion object {
-        fun create(context: Context): ConfigRepository {
-            val db = AppDatabase.getInstance(context)
-            return ConfigRepository(db.configJogadorDao())
+        fun create(): ConfigRepository {
+            return ConfigRepository(FirebaseFirestore.getInstance())
         }
     }
 }

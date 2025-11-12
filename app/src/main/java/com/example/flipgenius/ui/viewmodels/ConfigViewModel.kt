@@ -39,19 +39,19 @@ class ConfigViewModel(
         }
     }
 
-    fun carregarPerfilPorId(id: Long) {
+    fun observarPerfil(nome: String) {
         viewModelScope.launch {
-            val config = repository.obterPorId(id)
-            if (config == null) {
-                _uiState.update { it.copy(error = "Usuário não encontrado") }
-            } else setFromConfig(config)
+            repository.observarConfig(nome).collect { cfg ->
+                if (cfg != null) setFromConfig(cfg)
+            }
         }
     }
 
     fun onAtualizarNome(novoNome: String) {
-        val id = _uiState.value.currentUserId ?: return
+        val antigo = _uiState.value.nomeUsuario
+        if (antigo.isBlank()) return
         viewModelScope.launch {
-            val result = repository.atualizarNome(id, novoNome.trim())
+            val result = repository.atualizarNome(antigo, novoNome.trim())
             if (result.isSuccess) {
                 _uiState.update { it.copy(nomeUsuario = novoNome, successMessage = "Nome atualizado") }
             } else {
@@ -61,9 +61,10 @@ class ConfigViewModel(
     }
 
     fun onTrocarSenha(senhaAtual: String, novaSenha: String) {
-        val id = _uiState.value.currentUserId ?: return
+        val nome = _uiState.value.nomeUsuario
+        if (nome.isBlank()) return
         viewModelScope.launch {
-            val result = repository.trocarSenha(id, senhaAtual, novaSenha)
+            val result = repository.trocarSenha(nome, senhaAtual, novaSenha)
             _uiState.update { state ->
                 if (result.isSuccess) state.copy(successMessage = "Senha alterada com sucesso")
                 else state.copy(error = result.exceptionOrNull()?.message)
@@ -72,9 +73,10 @@ class ConfigViewModel(
     }
 
     fun onAtualizarTema(tema: String) {
-        val id = _uiState.value.currentUserId ?: return
+        val nome = _uiState.value.nomeUsuario
+        if (nome.isBlank()) return
         viewModelScope.launch {
-            val result = repository.atualizarTema(id, tema)
+            val result = repository.atualizarTema(nome, tema)
             _uiState.update { state ->
                 if (result.isSuccess) state.copy(temaPreferido = tema, successMessage = "Tema atualizado")
                 else state.copy(error = result.exceptionOrNull()?.message)
@@ -83,9 +85,10 @@ class ConfigViewModel(
     }
 
     fun onDeletarConta() {
-        val id = _uiState.value.currentUserId ?: return
+        val nome = _uiState.value.nomeUsuario
+        if (nome.isBlank()) return
         viewModelScope.launch {
-            val result = repository.deletarConta(id)
+            val result = repository.deletarConta(nome)
             _uiState.update { state ->
                 if (result.isSuccess) ConfigUiState()
                 else state.copy(error = result.exceptionOrNull()?.message)

@@ -32,7 +32,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
     var currentUserName by remember { mutableStateOf<String?>(null) }
-    val repo = remember { ConfigRepository.create(context) }
+    val repo = remember { ConfigRepository.create() }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -49,15 +49,12 @@ fun AppNavigation() {
                 LoginScreen(
                     onUserLoginClick = { user, pass ->
                         LaunchedEffect(user, pass) {
-                            val cfg = repo.obterPorNome(user)
-                            if (cfg != null) {
-                                // Verificação simples de senha
-                                val reflect = repo
-                                // Não expomos a função de hash aqui; usamos fluxo de troca de senha para validação simples
-                                // KISS: assumimos sucesso se existir; para real, deveríamos comparar hash
+                            val ok = repo.validarLogin(user, pass)
+                            if (ok) {
                                 currentUserName = user
                                 navController.navigate("home")
                             } else {
+                                // se não existir, direciona para cadastro
                                 navController.navigate("cadastro")
                             }
                         }
@@ -85,8 +82,13 @@ fun AppNavigation() {
             composable("home") { HomeScreen(navController = navController) }
 
             composable("temas") {
-                val vm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory(context))
-                LaunchedEffect(currentUserName) { currentUserName?.let { vm.carregarPerfilPorNome(it) } }
+                val vm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
+                LaunchedEffect(currentUserName) {
+                    currentUserName?.let {
+                        vm.carregarPerfilPorNome(it)
+                        vm.observarPerfil(it)
+                    }
+                }
                 EscolherTemaScreen(navController = navController, viewModel = vm)
             }
 

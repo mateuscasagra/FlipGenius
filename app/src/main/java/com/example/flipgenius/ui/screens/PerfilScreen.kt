@@ -29,12 +29,14 @@ fun PerfilScreen(
     navController: NavHostController,
     currentUserName: String? = null
 ) {
-    val context = LocalContext.current
-    val viewModel: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory(context))
+    val viewModel: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(currentUserName) {
-        currentUserName?.let { viewModel.carregarPerfilPorNome(it) }
+        currentUserName?.let {
+            viewModel.carregarPerfilPorNome(it)
+            viewModel.observarPerfil(it)
+        }
     }
 
     var novoNome by remember { mutableStateOf("") }
