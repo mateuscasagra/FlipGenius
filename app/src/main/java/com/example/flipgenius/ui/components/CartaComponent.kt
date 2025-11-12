@@ -50,10 +50,9 @@ fun CartaComponent(
     ) {
         if (carta.virada || carta.encontrada) {
             Text(
-                text = carta.numero.toString(),
-                fontSize = 32.sp,
+                text = carta.emoji,
+                fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
                 textAlign = TextAlign.Center
             )
         } else {

@@ -3,6 +3,7 @@ package com.example.flipgenius.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 
 data class AuthUiState(
@@ -13,14 +14,19 @@ data class AuthUiState(
 
     val registerUser: String = "",
     val registerPassword: String = "",
-    val registerConfirmPassword: String = ""
+    val registerConfirmPassword: String = "",
+    
+    // Usuário logado
+    val usuarioId: Long? = null
 )
 
 class AuthViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState = _uiState.asStateFlow()
-
+    
+    // Helper para obter o valor atual do usuarioId
+    fun getUsuarioId(): Long? = _uiState.value.usuarioId
 
     fun onLoginTabChange(index: Int) {
         _uiState.update { it.copy(loginSelectedTabIndex = index) }
@@ -40,5 +46,13 @@ class AuthViewModel : ViewModel() {
     }
     fun onRegisterConfirmPasswordChange(password: String) {
         _uiState.update { it.copy(registerConfirmPassword = password) }
+    }
+    
+    fun setUsuarioLogado(id: Long) {
+        _uiState.update { it.copy(usuarioId = id) }
+    }
+    
+    fun logout() {
+        _uiState.update { it.copy(usuarioId = null) }
     }
 }
