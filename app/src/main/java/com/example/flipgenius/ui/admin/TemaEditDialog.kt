@@ -4,14 +4,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.flipgenius.ui.theme.FlipGeniusTheme
+import com.example.flipgenius.ui.theme.Purple40
 
 @Composable
 fun TemaEditDialog(
@@ -24,7 +27,8 @@ fun TemaEditDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
 
-        title = { Text("Adicionar Novo Tema") },
+        title = { Text("Adicionar Novo Tema",
+            color = Purple40) },
 
         text = {
             Column {
@@ -49,14 +53,14 @@ fun TemaEditDialog(
                     onSave(nomeTema, emojisTema)
                 }
             ) {
-                Text("Salvar")
+                Text("Salvar", color = Purple40)
             }
         },
         dismissButton = {
             TextButton(
                 onClick = onDismiss
             ) {
-                Text("Cancelar")
+                Text("Cancelar", color = Purple40)
             }
         }
     )
@@ -65,7 +69,10 @@ fun TemaEditDialog(
 @Preview(showBackground = true)
 @Composable
 fun TemaEditDialogPreview() {
-    FlipGeniusTheme {
+    FlipGeniusTheme (
+        darkTheme = true,
+        dynamicColor = false
+    ) {
         TemaEditDialog(
             onDismiss = {},
             onSave = { nome, emojis -> }
