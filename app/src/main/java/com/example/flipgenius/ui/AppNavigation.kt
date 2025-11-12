@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.rememberCoroutineScope
@@ -29,6 +30,8 @@ import com.example.flipgenius.ui.screens.JogoScreen
 import com.example.flipgenius.ui.screens.PerfilScreen
 import com.example.flipgenius.ui.screens.RankingScreen
 import com.example.flipgenius.ui.viewmodels.ConfigViewModel
+import com.example.flipgenius.ui.ViewModelFactory
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavigation() {
@@ -39,6 +42,7 @@ fun AppNavigation() {
     val scope = rememberCoroutineScope()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         bottomBar = {
@@ -58,7 +62,6 @@ fun AppNavigation() {
                                 currentUserName = user
                                 navController.navigate("home")
                             } else {
-                                // se não existir, direciona para cadastro
                                 navController.navigate("cadastro")
                             }
                         }
@@ -83,7 +86,16 @@ fun AppNavigation() {
 
             composable("dashboard") { DashboardAdminScreen() }
 
-            composable("home") { HomeScreen(navController = navController) }
+            composable("home") {
+                val vm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
+                LaunchedEffect(currentUserName) {
+                    currentUserName?.let {
+                        vm.carregarPerfilPorNome(it)
+                        vm.observarPerfil(it)
+                    }
+                }
+                HomeScreen(navController = navController, viewModel = vm)
+            }
 
             composable("temas") {
                 val vm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())

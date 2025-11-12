@@ -3,13 +3,15 @@ package com.example.flipgenius.ui.viewmodels
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+<<<<<<< HEAD
 import androidx.lifecycle.ViewModelProvider
 import com.example.flipgenius.data.local.AppDatabase
 import com.example.flipgenius.data.local.entities.PartidaTimeAttack
 import com.example.flipgenius.data.repository.TimeAttackRepository
 import com.example.flipgenius.data.repository.TemaRepository
+=======
+>>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
 import com.example.flipgenius.model.CartaJogo
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,12 +22,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+<<<<<<< HEAD
  
+=======
+>>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
 
-class TimeAttackViewModel(
-    private val timeAttackRepository: TimeAttackRepository,
-    private val temaRepository: TemaRepository
-    ) : ViewModel() {
+class TimeAttackViewModel : ViewModel() {
 
     private val _cartas = MutableStateFlow<List<CartaJogo>>(emptyList())
     val cartas: StateFlow<List<CartaJogo>> = _cartas.asStateFlow()
@@ -74,9 +76,8 @@ class TimeAttackViewModel(
     }
 
 
-     fun iniciarJogo(playerName: String, themeName: String) {
+    fun iniciarJogo(playerName: String = "", themeName: String = "") {
         viewModelScope.launch {
-
             nomeJogadorAtual = playerName
             nomeTemaAtual = themeName
             _tempoRestante.value = 60
@@ -84,27 +85,36 @@ class TimeAttackViewModel(
             iniciarTimer()
             _pontuacaoFinal.value = null
 
+<<<<<<< HEAD
             val emojisDoTema = temaRepository.getEmojis(nomeTemaAtual)
 
 
             val cartasPares = emojisDoTema.flatMap { emoji ->
+=======
+            // Gera pares com números (1..6), dois de cada
+            val numeros = listOf(1, 2, 3, 4, 5, 6)
+            val cartasPares = numeros.flatMap { numero ->
+>>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
                 listOf(
-                    CartaJogo(id = 0, conteudo = emoji),
-                    CartaJogo(id = 0, conteudo = emoji)
+                    CartaJogo(id = 0, numero = numero),
+                    CartaJogo(id = 0, numero = numero)
                 )
             }
 
             val cartasEmbaralhadas = cartasPares.shuffled()
-
             val cartasComIndices = cartasEmbaralhadas.mapIndexed { index, carta ->
                 carta.copy(id = index)
-                }
+            }
             _cartas.value = cartasComIndices
             _jogoFinalizado.value = false
             cartasViradas = emptyList()
             podeVirar = true
+<<<<<<< HEAD
             updateUiState()
             }
+=======
+        }
+>>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
     }
 
      fun virarCarta(cartaId: Int) {
@@ -130,7 +140,7 @@ class TimeAttackViewModel(
                 val segundaCarta = _cartas.value.find { it.id == cartasViradas[1] }
 
                 if (primeiraCarta != null && segundaCarta != null) {
-                    if (primeiraCarta.conteudo == segundaCarta.conteudo) {
+                    if (primeiraCarta.numero == segundaCarta.numero) {
 
                         val cartasAtualizadas = _cartas.value.map { c ->
                             if (c.id == cartasViradas[0] || c.id == cartasViradas[1]) {
@@ -195,20 +205,9 @@ class TimeAttackViewModel(
     }
 
     private fun salvarPartida() {
-        viewModelScope.launch(Dispatchers.IO){
-            val pontuacaoFinal = calcularPontuacao()
-            _pontuacaoFinal.value = pontuacaoFinal
-
-            val partida = PartidaTimeAttack(
-                nomeJogador = nomeJogadorAtual,
-                pontuacao = pontuacaoFinal,
-                temaNome = nomeTemaAtual,
-                dataPartida = System.currentTimeMillis()
-            )
-
-            timeAttackRepository.insertPartida(partida)
-
-        }
+        // No-op para compilar enquanto o repositório de TimeAttack não está disponível
+        val pontuacao = calcularPontuacao()
+        _pontuacaoFinal.value = pontuacao
     }
 
     companion object {
