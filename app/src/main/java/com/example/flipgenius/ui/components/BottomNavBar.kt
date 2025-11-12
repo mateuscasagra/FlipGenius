@@ -20,15 +20,9 @@ import androidx.compose.material.icons.filled.Person
 @Composable
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
-<<<<<<< HEAD
-        BottomItem("home", "Home", Icons.Default.Home),
-        BottomItem("temas", "Temas", Icons.Default.Home),
-        BottomItem("perfil", "Perfil", Icons.Default.Person)
-=======
         BottomItem("home", "Home", Icons.Filled.Home),
         BottomItem("temas", "Temas", Icons.Filled.Home),
         BottomItem("perfil", "Perfil", Icons.Filled.Person)
->>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()

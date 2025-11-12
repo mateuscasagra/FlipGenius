@@ -4,10 +4,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.services)
     id("org.jetbrains.kotlin.kapt")
-<<<<<<< HEAD
-=======
-    // Merge decision: manter plugins via aliases (master). KSP omitido por não definido em libs.
->>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
 }
 
 android {
@@ -49,12 +45,8 @@ dependencies {
     implementation(platform(libs.kotlinx.coroutines.bom))
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
-<<<<<<< HEAD
-    implementation(libs.firebase.firestore.ktx)
-=======
     implementation("com.google.firebase:firebase-firestore-ktx:25.0.0")
     implementation("com.google.firebase:firebase-auth-ktx:23.0.0")
->>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -65,11 +57,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.navigation.compose.android)
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.common.jvm)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

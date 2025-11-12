@@ -3,14 +3,11 @@ package com.example.flipgenius.ui.viewmodels
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-<<<<<<< HEAD
 import androidx.lifecycle.ViewModelProvider
 import com.example.flipgenius.data.local.AppDatabase
 import com.example.flipgenius.data.local.entities.PartidaTimeAttack
 import com.example.flipgenius.data.repository.TimeAttackRepository
 import com.example.flipgenius.data.repository.TemaRepository
-=======
->>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
 import com.example.flipgenius.model.CartaJogo
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,12 +19,11 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-<<<<<<< HEAD
- 
-=======
->>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
 
-class TimeAttackViewModel : ViewModel() {
+class TimeAttackViewModel(
+    private val timeAttackRepository: TimeAttackRepository,
+    private val temaRepository: TemaRepository
+) : ViewModel() {
 
     private val _cartas = MutableStateFlow<List<CartaJogo>>(emptyList())
     val cartas: StateFlow<List<CartaJogo>> = _cartas.asStateFlow()
@@ -85,19 +81,11 @@ class TimeAttackViewModel : ViewModel() {
             iniciarTimer()
             _pontuacaoFinal.value = null
 
-<<<<<<< HEAD
             val emojisDoTema = temaRepository.getEmojis(nomeTemaAtual)
-
-
             val cartasPares = emojisDoTema.flatMap { emoji ->
-=======
-            // Gera pares com números (1..6), dois de cada
-            val numeros = listOf(1, 2, 3, 4, 5, 6)
-            val cartasPares = numeros.flatMap { numero ->
->>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
                 listOf(
-                    CartaJogo(id = 0, numero = numero),
-                    CartaJogo(id = 0, numero = numero)
+                    CartaJogo(id = 0, conteudo = emoji),
+                    CartaJogo(id = 0, conteudo = emoji)
                 )
             }
 
@@ -109,12 +97,8 @@ class TimeAttackViewModel : ViewModel() {
             _jogoFinalizado.value = false
             cartasViradas = emptyList()
             podeVirar = true
-<<<<<<< HEAD
             updateUiState()
-            }
-=======
         }
->>>>>>> 1bc6e9e (ajustado layout das telas e logica com o banco)
     }
 
      fun virarCarta(cartaId: Int) {
@@ -140,7 +124,7 @@ class TimeAttackViewModel : ViewModel() {
                 val segundaCarta = _cartas.value.find { it.id == cartasViradas[1] }
 
                 if (primeiraCarta != null && segundaCarta != null) {
-                    if (primeiraCarta.numero == segundaCarta.numero) {
+                    if (primeiraCarta.conteudo == segundaCarta.conteudo) {
 
                         val cartasAtualizadas = _cartas.value.map { c ->
                             if (c.id == cartasViradas[0] || c.id == cartasViradas[1]) {
@@ -205,9 +189,19 @@ class TimeAttackViewModel : ViewModel() {
     }
 
     private fun salvarPartida() {
-        // No-op para compilar enquanto o repositório de TimeAttack não está disponível
         val pontuacao = calcularPontuacao()
         _pontuacaoFinal.value = pontuacao
+        viewModelScope.launch {
+            val partida = PartidaTimeAttack(
+                nomeJogador = nomeJogadorAtual.ifBlank { "Jogador" },
+                pontuacao = pontuacao,
+                temaNome = nomeTemaAtual.ifBlank { "padrao" },
+                dataPartida = System.currentTimeMillis()
+            )
+            try {
+                timeAttackRepository.insertPartida(partida)
+            } catch (_: Exception) { }
+        }
     }
 
     companion object {
