@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.services)
+    // Merge decision: manter plugins via aliases (master). KSP omitido por não definido em libs.
 }
 
 android {
@@ -55,9 +56,11 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    // Merge decision: manter dependências de navegação da master e adicionar runtime-ktx do stash.
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.navigation.compose.android)
     implementation(libs.androidx.room.common.jvm)
+    implementation(libs.androidx.navigation.runtime.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

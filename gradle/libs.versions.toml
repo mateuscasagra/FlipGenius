@@ -15,6 +15,7 @@ coroutines = "1.9.1"
 navigationComposeAndroid = "2.9.6"
 navigationComposeJvmstubs = "2.9.6"
 roomCommonJvm = "2.8.3"
+navigationRuntimeKtx = "2.9.6"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +40,12 @@ androidx-navigation-compose-android = { group = "androidx.navigation", name = "n
 androidx-navigation-compose-jvmstubs = { group = "androidx.navigation", name = "navigation-compose-jvmstubs", version.ref = "navigationComposeJvmstubs" }
 kotlinx-coroutines-bom = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-bom", version.ref = "kotlinxCoroutinesBom" }
 androidx-room-common-jvm = { group = "androidx.room", name = "room-common-jvm", version.ref = "roomCommonJvm" }
+androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
+androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
+
+# Merge decisions:
+# - Mantidas versões e libs de navegação da master.
+# - Adicionada navigation-runtime-ktx do stash para preservar funcionalidades.
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
