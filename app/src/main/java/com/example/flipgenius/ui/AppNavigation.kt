@@ -11,6 +11,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -25,6 +27,7 @@ import com.example.flipgenius.ui.screens.EscolherTemaScreen
 import com.example.flipgenius.ui.screens.HomeScreen
 import com.example.flipgenius.ui.screens.JogoScreen
 import com.example.flipgenius.ui.screens.PerfilScreen
+import com.example.flipgenius.ui.screens.RankingScreen
 import com.example.flipgenius.ui.viewmodels.ConfigViewModel
 
 @Composable
@@ -33,6 +36,7 @@ fun AppNavigation() {
     val context = LocalContext.current
     var currentUserName by remember { mutableStateOf<String?>(null) }
     val repo = remember { ConfigRepository.create() }
+    val scope = rememberCoroutineScope()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -43,12 +47,12 @@ fun AppNavigation() {
             }
         }
     ) { innerPadding ->
-        NavHost(navController = navController, startDestination = "login", modifier = Modifier.padding(innerPadding)) {
+        NavHost(navController = navController, startDestination = "timeAttackGame", modifier = Modifier.padding(innerPadding)) {
 
             composable("login") {
                 LoginScreen(
                     onUserLoginClick = { user, pass ->
-                        LaunchedEffect(user, pass) {
+                        scope.launch {
                             val ok = repo.validarLogin(user, pass)
                             if (ok) {
                                 currentUserName = user
@@ -67,7 +71,7 @@ fun AppNavigation() {
             composable("cadastro") {
                 RegisterScreen(
                     onRegisterClick = { user, pass ->
-                        LaunchedEffect(user, pass) {
+                        scope.launch {
                             repo.criarOuObter(user, pass)
                             currentUserName = user
                             navController.navigate("home")
@@ -77,7 +81,7 @@ fun AppNavigation() {
                 )
             }
 
-            composable("dashboard") { DashboardAdminScreen(navController = navController) }
+            composable("dashboard") { DashboardAdminScreen() }
 
             composable("home") { HomeScreen(navController = navController) }
 
@@ -105,15 +109,14 @@ fun AppNavigation() {
 
             composable("perfil") { PerfilScreen(navController = navController, currentUserName = currentUserName) }
 
-            composable("ranking") { Text("Ranking") }
+            composable("ranking") { RankingScreen(navController = navController) }
 
             composable("resultado") { /* ResultadoScreen existente */ com.example.flipgenius.ui.screens.ResultadoScreen(navController = navController) }
 
-            composable("timeAttackGame") { Text("Time Attack - Jogo") }
+            composable("timeAttackGame") { com.example.flipgenius.ui.screens.TimeAttackGameScreen(navController = navController) }
 
-            composable("timeAttackRanking") { Text("Time Attack - Ranking") }
+            composable("timeAttackRanking") { com.example.flipgenius.ui.screens.TimeAttackRankingScreen(navController = navController) }
         }
     }
 
-}
 }

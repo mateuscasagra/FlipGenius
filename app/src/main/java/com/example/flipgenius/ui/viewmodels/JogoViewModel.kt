@@ -34,8 +34,8 @@ class JogoViewModel : ViewModel() {
         // Criar pares de cartas usando flatMap para duplicar cada número
         val cartasPares = numeros.flatMap { numero ->
             listOf(
-                CartaJogo(id = numero * 2 - 1, numero = numero),
-                CartaJogo(id = numero * 2, numero = numero)
+                CartaJogo(id = numero * 2 - 1, conteudo = numero.toString()),
+                CartaJogo(id = numero * 2, conteudo = numero.toString())
             )
         }
         
@@ -78,8 +78,8 @@ class JogoViewModel : ViewModel() {
                 val primeiraCarta = _cartas.value.find { it.id == cartasViradas[0] }
                 val segundaCarta = _cartas.value.find { it.id == cartasViradas[1] }
                 
-                if (primeiraCarta != null && segundaCarta != null) {
-                    if (primeiraCarta.numero == segundaCarta.numero) {
+                    if (primeiraCarta != null && segundaCarta != null) {
+                    if (primeiraCarta.conteudo == segundaCarta.conteudo) {
                         // Cartas iguais - marcar como encontradas
                         val cartasAtualizadas = _cartas.value.map { c ->
                             if (c.id == cartasViradas[0] || c.id == cartasViradas[1]) {

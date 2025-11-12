@@ -12,7 +12,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Person
 
 /**
@@ -22,7 +21,7 @@ import androidx.compose.material.icons.filled.Person
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
         BottomItem("home", "Home", Icons.Default.Home),
-        BottomItem("temas", "Temas", Icons.Default.Palette),
+        BottomItem("temas", "Temas", Icons.Default.Home),
         BottomItem("perfil", "Perfil", Icons.Default.Person)
     )
 

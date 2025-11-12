@@ -1,7 +1,10 @@
 package com.example.flipgenius.ui.viewmodels
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.ViewModelProvider
+import com.example.flipgenius.data.local.AppDatabase
 import com.example.flipgenius.data.local.entities.PartidaTimeAttack
 import com.example.flipgenius.data.repository.TimeAttackRepository
 import com.example.flipgenius.data.repository.TemaRepository
@@ -17,7 +20,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlin.concurrent.timer
+ 
 
 class TimeAttackViewModel(
     private val timeAttackRepository: TimeAttackRepository,
@@ -45,6 +48,31 @@ class TimeAttackViewModel(
     private val _pontuacaoFinal = MutableStateFlow<Int?>(null)
     val pontuacaoFinal: StateFlow<Int?> = _pontuacaoFinal.asStateFlow()
 
+    private val _uiState = MutableStateFlow<TimeAttackUiState>(TimeAttackUiState.Idle)
+    val uiState: StateFlow<TimeAttackUiState> = _uiState.asStateFlow()
+
+    private fun updateUiState() {
+        if (!_jogoFinalizado.value) {
+            if (_cartas.value.isEmpty()) {
+                _uiState.value = TimeAttackUiState.Idle
+            } else {
+                _uiState.value = TimeAttackUiState.Playing(
+                    cartas = _cartas.value,
+                    tempoRestante = _tempoRestante.value
+                )
+            }
+        } else {
+            val resultado = if (_cartas.value.all { it.encontrada }) Resultado.Vitoria else Resultado.Derrota
+            val score = _pontuacaoFinal.value ?: calcularPontuacao()
+            _uiState.value = TimeAttackUiState.Finished(
+                cartas = _cartas.value,
+                tempoRestante = _tempoRestante.value,
+                pontuacaoFinal = score,
+                resultado = resultado
+            )
+        }
+    }
+
 
      fun iniciarJogo(playerName: String, themeName: String) {
         viewModelScope.launch {
@@ -56,7 +84,7 @@ class TimeAttackViewModel(
             iniciarTimer()
             _pontuacaoFinal.value = null
 
-            val emojisDoTema = temaRepository.getEmojis(nomeTema)
+            val emojisDoTema = temaRepository.getEmojis(nomeTemaAtual)
 
 
             val cartasPares = emojisDoTema.flatMap { emoji ->
@@ -75,6 +103,7 @@ class TimeAttackViewModel(
             _jogoFinalizado.value = false
             cartasViradas = emptyList()
             podeVirar = true
+            updateUiState()
             }
     }
 
@@ -116,7 +145,10 @@ class TimeAttackViewModel(
                         if (todasEncontradas) {
                             _jogoFinalizado.value = true
                             timerJob?.cancel()
+                            val pontuacao = calcularPontuacao()
+                            _pontuacaoFinal.value = pontuacao
                             salvarPartida()
+                            updateUiState()
                         }
                     } else {
                         val cartasAtualizadas = _cartas.value.map { c ->
@@ -127,6 +159,7 @@ class TimeAttackViewModel(
                             }
                         }
                         _cartas.value = cartasAtualizadas
+                        updateUiState()
                     }
                 }
 
@@ -144,10 +177,13 @@ class TimeAttackViewModel(
                 .onEach { delay(1000L) }
                 .onEach { tempo ->
                     _tempoRestante.value = tempo
+                    updateUiState()
                 }
                 .onCompletion {
                     if(!_jogoFinalizado.value){
                         _jogoFinalizado.value = true
+                        _pontuacaoFinal.value = calcularPontuacao()
+                        updateUiState()
                     }
             }
             .launchIn(viewModelScope)
@@ -174,4 +210,31 @@ class TimeAttackViewModel(
 
         }
     }
+
+    companion object {
+        fun factory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val db = AppDatabase.getInstance(context)
+                val timeRepo = TimeAttackRepository(db.timeAttackDao())
+                val temaRepo = TemaRepository()
+                @Suppress("UNCHECKED_CAST")
+                return TimeAttackViewModel(timeRepo, temaRepo) as T
+            }
+        }
+    }
 }
+sealed interface TimeAttackUiState {
+    object Idle : TimeAttackUiState
+    data class Playing(
+        val cartas: List<CartaJogo>,
+        val tempoRestante: Int
+    ) : TimeAttackUiState
+    data class Finished(
+        val cartas: List<CartaJogo>,
+        val tempoRestante: Int,
+        val pontuacaoFinal: Int,
+        val resultado: Resultado
+    ) : TimeAttackUiState
+}
+
+enum class Resultado { Vitoria, Derrota }
