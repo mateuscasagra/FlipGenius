@@ -1,23 +1,26 @@
 package com.example.flipgenius.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.flipgenius.ui.components.CartaComponent
 import com.example.flipgenius.ui.viewmodels.JogoViewModel
 
@@ -29,55 +32,108 @@ fun JogoScreen(
     val cartas by viewModel.cartas.collectAsState()
     val pontuacao by viewModel.pontuacao.collectAsState()
     val jogoFinalizado by viewModel.jogoFinalizado.collectAsState()
-    
+
+    val backgroundColor = Color(0xFF121212)
+    val cardColor = Color(0xFF1E1E1E)
+    val primaryColor = Color(0xFF6200EE)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(backgroundColor)
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Título e Pontuação
+        // Header
         Text(
-            text = "Jogo da Memória",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
+            text = "🎯 Jogo da Memória",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
         )
-        
-        Text(
-            text = "Pontuação: $pontuacao / 6",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium
-        )
-        
+
+        // Card de Pontuação
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = cardColor)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Pares Encontrados",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = "$pontuacao / 6",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = primaryColor
+                    )
+                }
+
+                // Barra de progresso visual
+                LinearProgressIndicator(
+                    progress = { pontuacao / 6f },
+                    modifier = Modifier
+                        .width(120.dp)
+                        .height(8.dp),
+                    color = primaryColor,
+                    trackColor = Color.Gray.copy(alpha = 0.3f),
+                )
+            }
+        }
+
         // Mensagem de vitória
         if (jogoFinalizado) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = primaryColor.copy(alpha = 0.2f)
+                )
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Parabéns! Você completou o jogo!",
-                        fontSize = 20.sp,
+                        text = "🎉 Parabéns!",
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
+                        color = primaryColor,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Você completou o jogo!",
+                        fontSize = 14.sp,
+                        color = Color.White,
                         textAlign = TextAlign.Center
                     )
                 }
             }
         }
-        
+
         // Grid de cartas 3x4
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(4.dp)
         ) {
             items(cartas) { carta ->
                 CartaComponent(
@@ -88,14 +144,40 @@ fun JogoScreen(
                 )
             }
         }
-        
-        // Botão para reiniciar
-        Button(
-            onClick = { viewModel.iniciarJogo() },
-            modifier = Modifier.fillMaxWidth()
+
+        // Botões de ação
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Novo Jogo")
+            OutlinedButton(
+                onClick = { navController.popBackStack() },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = primaryColor
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Voltar")
+            }
+
+            Button(
+                onClick = { viewModel.iniciarJogo() },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = primaryColor
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Novo Jogo", fontWeight = FontWeight.Bold)
+            }
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+fun JogoScreenPreview() {
+    JogoScreen(navController = rememberNavController())
 }
 

@@ -1,31 +1,18 @@
 package com.example.flipgenius.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -47,49 +34,169 @@ fun HomeScreen(
     val primaryColor = Color(0xFF6200EE)
     val textColor = Color.White
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor)
             .padding(24.dp),
-        contentAlignment = Alignment.Center
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
+        // Header com boas-vindas
+        Text(
+            text = "FlipGenius",
+            fontSize = 36.sp,
+            fontWeight = FontWeight.Bold,
+            color = primaryColor
+        )
+
+        Text(
+            text = if (uiState.nomeUsuario.isNotBlank())
+                "Olá, ${uiState.nomeUsuario}! 👋"
+            else
+                "Bem-vindo ao FlipGenius! 🎮",
+            fontSize = 18.sp,
+            color = Color.Gray
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Card - Modo Clássico
+        GameModeCard(
+            title = "🎯 Modo Clássico",
+            description = "Encontre todos os pares no menor número de tentativas",
+            primaryColor = primaryColor,
+            cardColor = cardColor,
+            onClick = { navController.navigate("jogo") }
+        )
+
+        // Card - Time Attack
+        GameModeCard(
+            title = "⚡ Time Attack",
+            description = "60 segundos para encontrar o máximo de pares possível",
+            primaryColor = primaryColor,
+            cardColor = cardColor,
+            onClick = { navController.navigate("timeAttackGame") }
+        )
+
+        // Card - Tema Atual
         Card(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .clickable { navController.navigate("temas") },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = cardColor)
         ) {
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "Tema Selecionado",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = uiState.temaPreferido.replaceFirstChar { it.uppercase() },
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = textColor
+                    )
+                }
+                Text(
+                    text = "🎨",
+                    fontSize = 32.sp
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Botões de navegação secundários
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
+                onClick = { navController.navigate("ranking") },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = primaryColor
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("📊 Ranking")
+            }
+
+            OutlinedButton(
+                onClick = { navController.navigate("perfil") },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = primaryColor
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("👤 Perfil")
+            }
+        }
+    }
+}
+
+@Composable
+private fun GameModeCard(
+    title: String,
+    description: String,
+    primaryColor: Color,
+    cardColor: Color,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = cardColor)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = title,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+
+            Text(
+                text = description,
+                fontSize = 14.sp,
+                color = Color.Gray,
+                lineHeight = 20.sp
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Button(
+                onClick = onClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = primaryColor
+                ),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = "FlipGenius",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = primaryColor
+                    text = "Jogar Agora",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
                 )
-
-                Text(
-                    text = if (uiState.nomeUsuario.isNotBlank()) "Olá, ${uiState.nomeUsuario}" else "Bem-vindo ao FlipGenius",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = textColor
-                )
-
-                HorizontalDivider(color = Color.Gray.copy(alpha = 0.3f))
-
-                Button(onClick = { navController.navigate("jogo") }) {
-                    Text("Começar Jogo")
-                }
-                Button(onClick = { navController.navigate("temas") }) {
-                    Text("Escolher Tema (${uiState.temaPreferido})")
-                }
-                Button(onClick = { navController.navigate("perfil") }) {
-                    Text("Meu Perfil")
-                }
             }
         }
     }

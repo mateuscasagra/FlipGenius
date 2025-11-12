@@ -50,7 +50,7 @@ fun AppNavigation() {
             }
         }
     ) { innerPadding ->
-        NavHost(navController = navController, startDestination = "timeAttackGame", modifier = Modifier.padding(innerPadding)) {
+        NavHost(navController = navController, startDestination = "home", modifier = Modifier.padding(innerPadding)) {
 
             composable("login") {
                 LoginScreen(
