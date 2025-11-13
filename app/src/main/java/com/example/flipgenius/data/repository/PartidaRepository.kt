@@ -11,7 +11,7 @@ import kotlinx.coroutines.tasks.await
 class PartidaRepository private constructor(
     private val firestore: FirebaseFirestore
 ) {
-    private val collection = firestore.collection("partidasClassic")
+    private val collection = firestore.collection("partidas_classico")
 
     suspend fun salvarPartida(partida: Partida): Result<Unit> {
         return try {

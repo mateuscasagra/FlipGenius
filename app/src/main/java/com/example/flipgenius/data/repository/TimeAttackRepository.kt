@@ -11,7 +11,7 @@ import kotlinx.coroutines.tasks.await
 class TimeAttackRepository private constructor(
     private val firestore: FirebaseFirestore
 ) {
-    private val collection = firestore.collection("partidasTimeAttack")
+    private val collection = firestore.collection("partidas_time_attack")
 
     val allPartidasFlow: Flow<List<PartidaTimeAttack>> = callbackFlow {
         val reg = collection

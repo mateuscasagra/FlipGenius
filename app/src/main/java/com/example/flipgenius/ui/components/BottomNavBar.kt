@@ -14,7 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.ui.graphics.Color
 
 /**
  * Bottom navigation simples entre as telas principais.
@@ -25,14 +25,16 @@ fun BottomNavBar(navController: NavHostController) {
         BottomItem("home", "Home", Icons.Filled.Home),
         BottomItem("temas", "Temas", Icons.Filled.Home),
         BottomItem("ranking", "Rankings", Icons.Filled.Star),
-        BottomItem("dashboard", "Admin", Icons.Filled.Settings),
         BottomItem("perfil", "Perfil", Icons.Filled.Person)
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    NavigationBar {
+    NavigationBar(
+        containerColor = Color(0xFF121212),
+        contentColor = Color(0xFF6200EE)
+    ) {
         items.forEach { item ->
             NavigationBarItem(
                 selected = currentRoute == item.route,

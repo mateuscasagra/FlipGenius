@@ -1,6 +1,7 @@
 package com.example.flipgenius.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -9,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -16,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,18 +45,18 @@ fun JogoScreen(
     val tentativas by viewModel.tentativas.collectAsState()
     val jogoFinalizado by viewModel.jogoFinalizado.collectAsState()
     val configState by configViewModel.uiState.collectAsState()
-    val tema = viewModel.getTema()
+    val temaPreferido = configState.temaPreferido
     
     // Navegar para ResultadoScreen quando jogo finalizar
     LaunchedEffect(jogoFinalizado, tentativas) {
         if (jogoFinalizado && tentativas > 0) {
-            val temaNome = when (tema) {
+            val temaNome = when (temaPreferido) {
                 "padrao" -> "Padrão"
                 "animais" -> "Animais"
                 "frutas" -> "Frutas"
                 "esportes" -> "Esportes"
                 "comidas" -> "Comidas"
-                else -> tema.ifBlank { "Padrão" }
+                else -> temaPreferido.ifBlank { "Padrão" }
             }
             // Substituir caracteres problemáticos na URL
             val modoEncoded = "Clássico"
@@ -70,14 +74,29 @@ fun JogoScreen(
     val cardColor = Color(0xFF1E1E1E)
     val primaryColor = Color(0xFF6200EE)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+    val bgResId = remember {
+        val r1 = context.resources.getIdentifier("baianomaldito", "drawable", context.packageName)
+        if (r1 != 0) r1 else context.resources.getIdentifier("baiano_maldito", "drawable", context.packageName)
+    }
+        if (temaPreferido.lowercase() == "joao" && bgResId != 0) {
+            Image(
+                painter = painterResource(id = bgResId),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Box(modifier = Modifier.fillMaxSize().background(backgroundColor)) {}
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         // Header
         Text(
             text = "🎯 Jogo da Memória",
@@ -205,6 +224,7 @@ fun JogoScreen(
                 Text("Novo Jogo", fontWeight = FontWeight.Bold)
             }
         }
+        }
     }
 }
 
@@ -220,4 +240,3 @@ fun JogoScreenPreview() {
         navController = rememberNavController()
     )
 }
-

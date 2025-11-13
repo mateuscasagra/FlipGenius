@@ -31,6 +31,7 @@ import com.example.flipgenius.ui.screens.HomeScreen
 import com.example.flipgenius.ui.screens.JogoScreen
 import com.example.flipgenius.ui.screens.PerfilScreen
 import com.example.flipgenius.ui.screens.RankingScreen
+import com.example.flipgenius.ui.screens.LoginAdminScreen
 import com.example.flipgenius.ui.viewmodels.ConfigViewModel
 import com.example.flipgenius.ui.viewmodels.JogoViewModel
 import com.example.flipgenius.ui.ViewModelFactory
@@ -50,7 +51,7 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
-            if (currentRoute in setOf("home", "temas", "perfil", "ranking", "dashboard")) {
+            if (currentRoute in setOf("home", "temas", "perfil", "ranking")) {
                 BottomNavBar(navController)
             }
         }
@@ -67,12 +68,18 @@ fun AppNavigation() {
                                 session.salvarUsuario(0L, user, false)
                                 currentUserName = user
                                 navController.navigate("home")
-                            } else {
-                                navController.navigate("cadastro")
                             }
                         }
                     },
-                    onAdminLoginClick = { _, _ -> navController.navigate("dashboard") },
+                    onAdminLoginClick = { adminUser, adminPass ->
+                        scope.launch {
+                            val ok = (adminUser == "admin" && adminPass == "admin")
+                            if (ok) {
+                                session.salvarUsuario(0L, adminUser, true)
+                                navController.navigate("dashboard")
+                            }
+                        }
+                    },
                     onNavigateToRegister = { navController.navigate("cadastro") }
                 )
             }
@@ -82,10 +89,14 @@ fun AppNavigation() {
                     navController = navController,
                     onCadastroClick = { user, pass ->
                         scope.launch {
-                            val criado = repo.criarOuObter(user, pass)
-                            session.salvarUsuario(0L, criado.nomeUsuario, false)
-                            currentUserName = criado.nomeUsuario
-                            navController.navigate("home")
+                            try {
+                                val criado = repo.criarOuObter(user, pass)
+                                session.salvarUsuario(0L, criado.nomeUsuario, false)
+                                currentUserName = criado.nomeUsuario
+                                navController.navigate("home")
+                            } catch (_: Exception) {
+                                // Falha de cadastro (ex.: regras do Firestore). Permanece na tela.
+                            }
                         }
                     }
                 )
@@ -128,27 +139,29 @@ fun AppNavigation() {
                 EscolherTemaScreen(navController = navController, viewModel = vm)
             }
 
-            composable("jogo") { 
+            composable("jogo") {
                 LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
-                val configVm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
-                val configState by configVm.uiState.collectAsState()
-                val tema = configState.temaPreferido.ifBlank { "padrao" }
                 val jogoVm: JogoViewModel = viewModel(
-                    factory = ViewModelFactory.getJogoFactory(context, tema)
+                    factory = ViewModelFactory.getJogoFactory(context, "padrao")
                 )
                 JogoScreen(
                     viewModel = jogoVm,
-                    navController = navController,
-                    configViewModel = configVm
+                    navController = navController
                 )
             }
 
             composable("loginAdmin") {
-                // Reutiliza LoginScreen com tab Admin
-                LoginScreen(
-                    onUserLoginClick = { _, _ -> },
-                    onAdminLoginClick = { _, _ -> navController.navigate("dashboard") },
-                    onNavigateToRegister = { navController.navigate("cadastro") }
+                LoginAdminScreen(
+                    onAdminLogin = { adminUser: String, adminPass: String ->
+                        scope.launch {
+                            val ok = (adminUser == "admin" && adminPass == "admin")
+                            if (ok) {
+                                session.salvarUsuario(0L, adminUser, true)
+                                navController.navigate("dashboard")
+                            }
+                        }
+                    },
+                    onBack = { navController.navigate("login") }
                 )
             }
 

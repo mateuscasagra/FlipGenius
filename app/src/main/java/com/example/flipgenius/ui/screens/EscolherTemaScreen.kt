@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -24,6 +24,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.flipgenius.ui.viewmodels.ConfigViewModel
 import com.example.flipgenius.ui.ViewModelFactory
+import com.example.flipgenius.data.remote.FirebaseService
 
 data class TemaInfo(
     val id: String,
@@ -42,13 +43,30 @@ fun EscolherTemaScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val temas = listOf(
-        TemaInfo("padrao", "Padrão", "🎮", listOf("🎮", "🎯", "🎲", "🎪")),
-        TemaInfo("animais", "Animais", "🐾", listOf("🐶", "🐱", "🐼", "🦁")),
-        TemaInfo("frutas", "Frutas", "🍎", listOf("🍎", "🍌", "🍇", "🍓")),
-        TemaInfo("esportes", "Esportes", "⚽", listOf("⚽", "🏀", "🎾", "⚾")),
-        TemaInfo("comidas", "Comidas", "🍕", listOf("🍕", "🍔", "🍟", "🌭"))
-    )
+    var temas by remember {
+        mutableStateOf(
+            listOf(
+                TemaInfo("padrao", "Padrão", "🎮", listOf("🎮", "🎯", "🎲", "🎪"))
+            )
+        )
+    }
+    LaunchedEffect(Unit) {
+        try {
+            val service = FirebaseService()
+            val remotos = service.listarTemas()
+            if (remotos.isNotEmpty()) {
+                temas = remotos.map { t ->
+                    val preview = if (t.emojis.isNotEmpty()) t.emojis.take(4) else listOf("✨")
+                    TemaInfo(
+                        id = t.id,
+                        nome = t.nome.replaceFirstChar { it.uppercase() },
+                        emoji = preview.firstOrNull() ?: "🎨",
+                        previewEmojis = preview
+                    )
+                }
+            }
+        } catch (_: Exception) { }
+    }
 
     val backgroundColor = Color(0xFF121212)
     val cardColor = Color(0xFF1E1E1E)

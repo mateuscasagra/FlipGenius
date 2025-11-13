@@ -45,7 +45,7 @@ dependencies {
     implementation(platform(libs.kotlinx.coroutines.bom))
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
-    implementation("com.google.firebase:firebase-firestore-ktx:25.0.0")
+    implementation("com.google.firebase:firebase-firestore-ktx:25.1.0")
     implementation("com.google.firebase:firebase-auth-ktx:23.0.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

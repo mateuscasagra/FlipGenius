@@ -22,6 +22,7 @@ import com.example.flipgenius.ui.theme.FlipGeniusTheme
 import com.example.flipgenius.ui.theme.Purple40
 import com.example.flipgenius.ui.viewmodels.AdminUiState
 import com.example.flipgenius.ui.viewmodels.AdminViewModel
+import androidx.compose.material3.TopAppBarDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,13 +31,21 @@ fun DashboardAdminScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    val backgroundColor = Color(0xFF121212)
+    val cardColor = Color(0xFF1E1E1E)
+    val primaryColor = Color(0xFF6200EE)
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = backgroundColor,
         topBar = {
             TopAppBar(
                 title = { Text("Painel do Admin", style = MaterialTheme.typography.headlineMedium,
-                    color = Purple40) }
+                    color = primaryColor) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = cardColor,
+                    titleContentColor = primaryColor
+                )
             )
         },
         floatingActionButton = {
@@ -45,7 +54,7 @@ fun DashboardAdminScreen(
                     onClick = {
                         viewModel.onShowAddDialog()
                     },
-                    containerColor = Purple40,
+                    containerColor = primaryColor,
                     contentColor = Color.White
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Adicionar Tema")
@@ -54,9 +63,16 @@ fun DashboardAdminScreen(
         }
     ) { paddingValues ->
 
-        Column(modifier = Modifier.padding(paddingValues)) {
+        Column(modifier = Modifier
+            .padding(paddingValues)
+            .fillMaxSize()
+        ) {
             val tabs = listOf("Temas", "Contas")
-            TabRow(selectedTabIndex = uiState.selectedTabIndex) {
+            TabRow(
+                selectedTabIndex = uiState.selectedTabIndex,
+                containerColor = cardColor,
+                contentColor = primaryColor
+            ) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = uiState.selectedTabIndex == index,
@@ -69,8 +85,8 @@ fun DashboardAdminScreen(
             when (uiState.selectedTabIndex) {
                 0 -> AdminTemasTab(
                     temasList = uiState.temasList,
-                    onEdit = { /* viewModel.onEditTheme(it) */ },
-                    onDelete = { /* viewModel.onDeleteTheme(it) */ }
+                    onEdit = { nome -> viewModel.onEditTheme(nome, "") },
+                    onDelete = { nome -> viewModel.onDeleteTheme(nome) }
                 )
                 1 -> AdminContasTab(
                     accountList = uiState.accountList,
@@ -136,18 +152,19 @@ private fun TemaAdminItem(
     onDelete: () -> Unit
 ) {
     ListItem(
-        headlineContent = { Text(nome) },
-        supportingContent = { Text(emojisPreview) },
+        headlineContent = { Text(nome, color = Color.White) },
+        supportingContent = { Text(emojisPreview, color = Color.Gray) },
         trailingContent = {
             Row {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Editar Tema")
+                    Icon(Icons.Default.Edit, contentDescription = "Editar Tema", tint = Color.White)
                 }
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Deletar Tema")
+                    Icon(Icons.Default.Delete, contentDescription = "Deletar Tema", tint = Color.Red)
                 }
             }
-        }
+        },
+        colors = ListItemDefaults.colors(containerColor = Color(0xFF1E1E1E))
     )
     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 }
