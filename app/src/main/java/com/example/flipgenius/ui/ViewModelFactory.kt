@@ -62,7 +62,8 @@ object ViewModelFactory {
             return when {
                 modelClass.isAssignableFrom(TimeAttackRankingViewModel::class.java) -> {
                     val repo = TimeAttackRepository.create()
-                    TimeAttackRankingViewModel(repo) as T
+                    val session = SessionManager(context.applicationContext)
+                    TimeAttackRankingViewModel(repo, session) as T
                 }
                 else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
             }

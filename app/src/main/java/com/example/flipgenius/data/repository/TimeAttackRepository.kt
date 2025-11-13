@@ -40,6 +40,7 @@ class TimeAttackRepository private constructor(
     }
 
     private fun PartidaTimeAttack.toMap(): Map<String, Any> = mapOf(
+        "usuarioId" to usuarioId,
         "nomeJogador" to nomeJogador,
         "pontuacao" to pontuacao,
         "temaNome" to temaNome,
@@ -47,12 +48,14 @@ class TimeAttackRepository private constructor(
     )
 
     private fun Map<String, Any>.toTimeAttack(): PartidaTimeAttack? {
+        val usuarioId = (this["usuarioId"] as? Number)?.toLong() ?: 0L
         val nomeJogador = this["nomeJogador"] as? String ?: return null
         val pontuacao = (this["pontuacao"] as? Number)?.toInt() ?: return null
         val temaNome = this["temaNome"] as? String ?: "padrao"
         val dataPartida = (this["dataPartida"] as? Number)?.toLong() ?: System.currentTimeMillis()
         return PartidaTimeAttack(
             id = 0,
+            usuarioId = usuarioId,
             nomeJogador = nomeJogador,
             pontuacao = pontuacao,
             temaNome = temaNome,

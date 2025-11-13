@@ -33,8 +33,8 @@ class TimeAttackRankingViewModel(
             filtradasTema
         }
         .combine(_filtrarPorUsuario) { partidas, porUsuario ->
-            val uid = sessionManager.getUsuarioId()
-            val filtradasUsuario = if (porUsuario && uid > 0) partidas.filter { it.usuarioId == uid } else partidas
+            val nome = sessionManager.getNomeUsuario()
+            val filtradasUsuario = if (porUsuario && nome.isNotBlank()) partidas.filter { it.nomeJogador == nome } else partidas
             val ordenadas = filtradasUsuario.sortedByDescending { it.pontuacao }
             RankingUiState.Success(ordenadas) as RankingUiState
         }
@@ -56,13 +56,8 @@ class TimeAttackRankingViewModel(
     companion object {
         fun factory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-<<<<<<< HEAD
-                val db = AppDatabase.getInstance(context)
-                val repo = TimeAttackRepository(db.timeAttackDao())
-                val session = SessionManager(context.applicationContext)
-=======
                 val repo = TimeAttackRepository.create()
->>>>>>> 20f133e (FIREBASE)
+                val session = SessionManager(context.applicationContext)
                 @Suppress("UNCHECKED_CAST")
                 return TimeAttackRankingViewModel(repo, session) as T
             }
