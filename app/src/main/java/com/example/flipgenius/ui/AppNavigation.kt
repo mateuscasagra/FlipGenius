@@ -55,7 +55,7 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
-            if (currentRoute in setOf("home", "temas", "perfil")) {
+            if (currentRoute in setOf("home", "temas", "perfil", "ranking", "dashboard")) {
                 BottomNavBar(navController)
             }
         }
@@ -100,9 +100,21 @@ fun AppNavigation() {
                 )
             }
 
-            composable("dashboard") { DashboardAdminScreen() }
+            composable("dashboard") {
+                LaunchedEffect(Unit) {
+                    if (!session.isAdmin()) {
+                        navController.navigate("loginAdmin")
+                    }
+                }
+                if (session.isAdmin()) {
+                    DashboardAdminScreen()
+                }
+            }
 
             composable("home") {
+                LaunchedEffect(Unit) {
+                    if (!session.isLoggedIn()) navController.navigate("login")
+                }
                 val vm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
                 LaunchedEffect(currentUserName) {
                     currentUserName?.let {
@@ -114,6 +126,7 @@ fun AppNavigation() {
             }
 
             composable("temas") {
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
                 val vm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
                 LaunchedEffect(currentUserName) {
                     currentUserName?.let {
@@ -125,6 +138,7 @@ fun AppNavigation() {
             }
 
             composable("jogo") { 
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
                 val configVm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
                 val configState by configVm.uiState.collectAsState()
                 val tema = configState.temaPreferido.ifBlank { "padrao" }
@@ -147,9 +161,15 @@ fun AppNavigation() {
                 )
             }
 
-            composable("perfil") { PerfilScreen(navController = navController, currentUserName = currentUserName) }
+            composable("perfil") { 
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
+                PerfilScreen(navController = navController, currentUserName = currentUserName) 
+            }
 
-            composable("ranking") { RankingScreen(navController = navController) }
+            composable("ranking") { 
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
+                RankingScreen(navController = navController) 
+            }
 
             composable(
                 route = "resultado/{modo}/{tentativas}/{tema}",
@@ -170,9 +190,15 @@ fun AppNavigation() {
                 )
             }
 
-            composable("timeAttackGame") { com.example.flipgenius.ui.screens.TimeAttackGameScreen(navController = navController) }
+            composable("timeAttackGame") { 
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
+                com.example.flipgenius.ui.screens.TimeAttackGameScreen(navController = navController) 
+            }
 
-            composable("timeAttackRanking") { com.example.flipgenius.ui.screens.TimeAttackRankingScreen(navController = navController) }
+            composable("timeAttackRanking") { 
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
+                com.example.flipgenius.ui.screens.TimeAttackRankingScreen(navController = navController) 
+            }
         }
     }
 

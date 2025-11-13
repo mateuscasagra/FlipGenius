@@ -13,6 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Settings
 
 /**
  * Bottom navigation simples entre as telas principais.
@@ -22,6 +24,8 @@ fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
         BottomItem("home", "Home", Icons.Filled.Home),
         BottomItem("temas", "Temas", Icons.Filled.Home),
+        BottomItem("ranking", "Rankings", Icons.Filled.Star),
+        BottomItem("dashboard", "Admin", Icons.Filled.Settings),
         BottomItem("perfil", "Perfil", Icons.Filled.Person)
     )
 
