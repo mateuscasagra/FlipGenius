@@ -14,6 +14,7 @@ import com.example.flipgenius.data.local.AppDatabase
 import com.example.flipgenius.data.repository.PartidaRepository
 import com.example.flipgenius.data.repository.TimeAttackRepository
 import com.example.flipgenius.data.repository.TemaRepository
+import com.example.flipgenius.ui.utils.SessionManager
 
 /**
  * Factory simples para criar ViewModels com dependências.
@@ -64,7 +65,8 @@ object ViewModelFactory {
                 modelClass.isAssignableFrom(TimeAttackRankingViewModel::class.java) -> {
                     val db = AppDatabase.getInstance(context)
                     val repo = TimeAttackRepository(db.timeAttackDao())
-                    TimeAttackRankingViewModel(repo) as T
+                    val session = SessionManager(context.applicationContext)
+                    TimeAttackRankingViewModel(repo, session) as T
                 }
                 else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
             }
@@ -78,7 +80,8 @@ object ViewModelFactory {
                     val db = AppDatabase.getInstance(context)
                     val timeRepo = TimeAttackRepository(db.timeAttackDao())
                     val temaRepo = TemaRepository()
-                    TimeAttackViewModel(timeRepo, temaRepo) as T
+                    val session = SessionManager(context.applicationContext)
+                    TimeAttackViewModel(timeRepo, temaRepo, session) as T
                 }
                 else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
             }
