@@ -8,6 +8,7 @@ import com.example.flipgenius.data.local.AppDatabase
 import com.example.flipgenius.data.local.entities.PartidaTimeAttack
 import com.example.flipgenius.data.repository.TimeAttackRepository
 import com.example.flipgenius.data.repository.TemaRepository
+import com.example.flipgenius.ui.utils.SessionManager
 import com.example.flipgenius.model.CartaJogo
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,8 @@ import kotlinx.coroutines.launch
 
 class TimeAttackViewModel(
     private val timeAttackRepository: TimeAttackRepository,
-    private val temaRepository: TemaRepository
+    private val temaRepository: TemaRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _cartas = MutableStateFlow<List<CartaJogo>>(emptyList())
@@ -74,7 +76,8 @@ class TimeAttackViewModel(
 
     fun iniciarJogo(playerName: String = "", themeName: String = "") {
         viewModelScope.launch {
-            nomeJogadorAtual = playerName
+            val sessionName = sessionManager.getNomeUsuario()
+            nomeJogadorAtual = if (playerName.isBlank()) sessionName else playerName
             nomeTemaAtual = themeName
             _tempoRestante.value = 60
             timerJob?.cancel()
@@ -192,15 +195,19 @@ class TimeAttackViewModel(
         val pontuacao = calcularPontuacao()
         _pontuacaoFinal.value = pontuacao
         viewModelScope.launch {
-            val partida = PartidaTimeAttack(
-                nomeJogador = nomeJogadorAtual.ifBlank { "Jogador" },
-                pontuacao = pontuacao,
-                temaNome = nomeTemaAtual.ifBlank { "padrao" },
-                dataPartida = System.currentTimeMillis()
-            )
-            try {
-                timeAttackRepository.insertPartida(partida)
-            } catch (_: Exception) { }
+            val usuarioId = sessionManager.getUsuarioId()
+            if (usuarioId > 0) {
+                val partida = PartidaTimeAttack(
+                    usuarioId = usuarioId,
+                    nomeJogador = nomeJogadorAtual.ifBlank { "Jogador" },
+                    pontuacao = pontuacao,
+                    temaNome = nomeTemaAtual.ifBlank { "padrao" },
+                    dataPartida = System.currentTimeMillis()
+                )
+                try {
+                    timeAttackRepository.insertPartida(partida)
+                } catch (_: Exception) { }
+            }
         }
     }
 
@@ -210,8 +217,9 @@ class TimeAttackViewModel(
                 val db = AppDatabase.getInstance(context)
                 val timeRepo = TimeAttackRepository(db.timeAttackDao())
                 val temaRepo = TemaRepository()
+                val session = SessionManager(context.applicationContext)
                 @Suppress("UNCHECKED_CAST")
-                return TimeAttackViewModel(timeRepo, temaRepo) as T
+                return TimeAttackViewModel(timeRepo, temaRepo, session) as T
             }
         }
     }

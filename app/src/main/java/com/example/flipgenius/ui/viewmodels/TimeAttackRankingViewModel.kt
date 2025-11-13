@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.flipgenius.data.local.AppDatabase
 import com.example.flipgenius.data.repository.TimeAttackRepository
 import com.example.flipgenius.ui.screens.RankingUiState
+import com.example.flipgenius.ui.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,16 +18,25 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
 
 class TimeAttackRankingViewModel(
-    private val repository: TimeAttackRepository
+    private val repository: TimeAttackRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _temaSelecionado = MutableStateFlow("Todos")
     val temaSelecionado: StateFlow<String> = _temaSelecionado.asStateFlow()
 
+    private val _filtrarPorUsuario = MutableStateFlow(false)
+    val filtrarPorUsuario: StateFlow<Boolean> = _filtrarPorUsuario.asStateFlow()
+
     val rankingUiState: StateFlow<RankingUiState> = repository.allPartidasFlow
         .combine(_temaSelecionado) { partidas, filtroTema ->
-            val filtradas = if (filtroTema == "Todos") partidas else partidas.filter { it.temaNome == filtroTema }
-            val ordenadas = filtradas.sortedByDescending { it.pontuacao }
+            val filtradasTema = if (filtroTema == "Todos") partidas else partidas.filter { it.temaNome == filtroTema }
+            filtradasTema
+        }
+        .combine(_filtrarPorUsuario) { partidas, porUsuario ->
+            val uid = sessionManager.getUsuarioId()
+            val filtradasUsuario = if (porUsuario && uid > 0) partidas.filter { it.usuarioId == uid } else partidas
+            val ordenadas = filtradasUsuario.sortedByDescending { it.pontuacao }
             RankingUiState.Success(ordenadas) as RankingUiState
         }
         .catch { emit(RankingUiState.Error) }
@@ -34,6 +44,10 @@ class TimeAttackRankingViewModel(
 
     fun selecionarTema(tema: String) {
         _temaSelecionado.value = tema
+    }
+
+    fun alternarFiltroUsuario() {
+        _filtrarPorUsuario.value = !_filtrarPorUsuario.value
     }
 
     fun clearHistory() {
@@ -45,8 +59,9 @@ class TimeAttackRankingViewModel(
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val db = AppDatabase.getInstance(context)
                 val repo = TimeAttackRepository(db.timeAttackDao())
+                val session = SessionManager(context.applicationContext)
                 @Suppress("UNCHECKED_CAST")
-                return TimeAttackRankingViewModel(repo) as T
+                return TimeAttackRankingViewModel(repo, session) as T
             }
         }
     }

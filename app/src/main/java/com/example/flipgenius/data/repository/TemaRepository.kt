@@ -1,11 +1,22 @@
 package com.example.flipgenius.data.repository
 
-/**
- * Repositório simples para fornecer emojis por tema.
- * Futuramente pode ser substituído por uma fonte remota (Firestore).
- */
-class TemaRepository {
-    fun getEmojis(themeName: String): List<String> {
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+
+class TemaRepository(
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+) {
+    suspend fun getEmojis(themeName: String): List<String> {
+        return try {
+            val doc = firestore.collection("temas").document(themeName.lowercase()).get().await()
+            val list = doc.get("emojis") as? List<*>
+            list?.mapNotNull { it?.toString() }?.takeIf { it.isNotEmpty() } ?: fallback(themeName)
+        } catch (_: Exception) {
+            fallback(themeName)
+        }
+    }
+
+    private fun fallback(themeName: String): List<String> {
         return when (themeName.lowercase()) {
             "animais" -> listOf("🐶", "🐱", "🐭", "🐹", "🐰", "🦊")
             "frutas" -> listOf("🍎", "🍌", "🍇", "🍓", "🍍", "🍑")

@@ -48,6 +48,7 @@ fun TimeAttackRankingScreen(
     )
     val uiState by viewModel.rankingUiState.collectAsState()
     val temaSelecionado by viewModel.temaSelecionado.collectAsState()
+    val filtrarPorUsuario by viewModel.filtrarPorUsuario.collectAsState()
 
     Column(
         modifier = Modifier
@@ -82,6 +83,11 @@ fun TimeAttackRankingScreen(
                             label = { Text(tema) }
                         )
                     }
+                    FilterChip(
+                        selected = filtrarPorUsuario,
+                        onClick = { viewModel.alternarFiltroUsuario() },
+                        label = { Text("Meu") }
+                    )
                 }
 
                 Button(onClick = { viewModel.clearHistory() }) {
