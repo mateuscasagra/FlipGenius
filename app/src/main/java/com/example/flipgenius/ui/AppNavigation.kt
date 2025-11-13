@@ -34,9 +34,6 @@ import com.example.flipgenius.ui.screens.RankingScreen
 import com.example.flipgenius.ui.viewmodels.ConfigViewModel
 import com.example.flipgenius.ui.viewmodels.JogoViewModel
 import com.example.flipgenius.ui.ViewModelFactory
-import kotlinx.coroutines.launch
-import com.example.flipgenius.data.local.AppDatabase
-import com.example.flipgenius.data.repository.AuthRepository
 import com.example.flipgenius.ui.utils.SessionManager
 
 @Composable
@@ -48,8 +45,6 @@ fun AppNavigation() {
     val scope = rememberCoroutineScope()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val db = remember { AppDatabase.getInstance(context) }
-    val authRepo = remember { AuthRepository(db.usuarioDao()) }
     val session = remember { SessionManager(context) }
 
 
@@ -67,11 +62,10 @@ fun AppNavigation() {
                 LoginScreen(
                     onUserLoginClick = { user, pass ->
                         scope.launch {
-                            val result = authRepo.login(user, pass)
-                            if (result.isSuccess) {
-                                val u = result.getOrNull()!!
-                                session.salvarUsuario(u.id, u.nome, u.isAdmin)
-                                currentUserName = u.nome
+                            val ok = repo.validarLogin(user, pass)
+                            if (ok) {
+                                session.salvarUsuario(0L, user, false)
+                                currentUserName = user
                                 navController.navigate("home")
                             } else {
                                 navController.navigate("cadastro")
@@ -88,13 +82,10 @@ fun AppNavigation() {
                     navController = navController,
                     onCadastroClick = { user, pass ->
                         scope.launch {
-                            val result = authRepo.cadastrarUsuario(user, pass)
-                            if (result.isSuccess) {
-                                val u = result.getOrNull()!!
-                                session.salvarUsuario(u.id, u.nome, u.isAdmin)
-                                currentUserName = u.nome
-                                navController.navigate("home")
-                            }
+                            val criado = repo.criarOuObter(user, pass)
+                            session.salvarUsuario(0L, criado.nomeUsuario, false)
+                            currentUserName = criado.nomeUsuario
+                            navController.navigate("home")
                         }
                     }
                 )
