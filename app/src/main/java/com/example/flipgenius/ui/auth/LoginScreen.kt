@@ -53,7 +53,6 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Logo/Título
                 Text(
                     text = "FlipGenius",
                     fontSize = 32.sp,

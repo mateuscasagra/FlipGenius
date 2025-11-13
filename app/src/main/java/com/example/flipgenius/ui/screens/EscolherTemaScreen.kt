@@ -33,9 +33,6 @@ data class TemaInfo(
     val previewEmojis: List<String>
 )
 
-/**
- * Tela simples para seleção de tema preferido.
- */
 @Composable
 fun EscolherTemaScreen(
     navController: NavHostController,
@@ -80,7 +77,6 @@ fun EscolherTemaScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Header
         Text(
             text = "Escolher Tema",
             fontSize = 32.sp,
@@ -96,7 +92,6 @@ fun EscolherTemaScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Grid de Temas
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier.fillMaxWidth(),
@@ -119,7 +114,6 @@ fun EscolherTemaScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Botão Voltar
         OutlinedButton(
             onClick = { navController.popBackStack() },
             modifier = Modifier.fillMaxWidth(),
@@ -184,7 +178,6 @@ private fun TemaCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Preview dos emojis
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {

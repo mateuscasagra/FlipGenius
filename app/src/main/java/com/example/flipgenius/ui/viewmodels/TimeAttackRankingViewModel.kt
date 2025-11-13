@@ -56,7 +56,7 @@ class TimeAttackRankingViewModel(
     companion object {
         fun factory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val repo = TimeAttackRepository.create()
+                val repo = TimeAttackRepository.create(context)
                 val session = SessionManager(context.applicationContext)
                 @Suppress("UNCHECKED_CAST")
                 return TimeAttackRankingViewModel(repo, session) as T

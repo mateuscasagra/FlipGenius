@@ -48,7 +48,7 @@ class RankingViewModel(
     companion object {
         fun factory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val repo = PartidaRepository.create()
+                val repo = PartidaRepository.create(context)
                 @Suppress("UNCHECKED_CAST")
                 return RankingViewModel(repo) as T
             }

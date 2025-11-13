@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class AuthUiState(
-    // Estado do Login
     val loginUser: String = "",
     val loginPassword: String = "",
     val loginSelectedTabIndex: Int = 0,

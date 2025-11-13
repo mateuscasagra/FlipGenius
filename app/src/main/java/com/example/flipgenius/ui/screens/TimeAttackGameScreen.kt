@@ -141,7 +141,6 @@ fun TimeAttackGameScreen(
                 }
             , colors = ButtonDefaults.buttonColors(containerColor = primaryColor)) { Text("Iniciar jogo") }
         } else if (uiState is TimeAttackUiState.Playing) {
-            // Grid simples usando linhas com 3 cartas por linha
             val linhas = (uiState as TimeAttackUiState.Playing).cartas.chunked(3)
             linhas.forEach { linha ->
                 Row(
@@ -155,14 +154,10 @@ fun TimeAttackGameScreen(
                             modifier = Modifier.weight(1f)
                         )
                     }
-                    repeat(3 - linha.size) {
-                        // Preenche espaço se a última linha tiver menos de 3 cartas
-                        androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) {}
-                    }
+                    repeat(3 - linha.size) { androidx.compose.foundation.layout.Box(modifier = Modifier.weight(1f)) {} }
                 }
             }
         } else if (uiState is TimeAttackUiState.Finished) {
-            // Resultado simples e ações
             Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = cardColor)) {
                 Column(
                     modifier = Modifier.padding(16.dp),

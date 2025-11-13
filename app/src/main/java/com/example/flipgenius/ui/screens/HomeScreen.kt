@@ -19,9 +19,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flipgenius.ui.viewmodels.ConfigViewModel
 import com.example.flipgenius.ui.ViewModelFactory
 
-/**
- * Tela inicial com boas-vindas e navegação básica.
- */
 @Composable
 fun HomeScreen(
     navController: NavHostController,
@@ -41,7 +38,6 @@ fun HomeScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Header com boas-vindas
         Text(
             text = "FlipGenius",
             fontSize = 36.sp,
@@ -60,7 +56,6 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Card - Modo Clássico
         GameModeCard(
             title = "🎯 Modo Clássico",
             description = "Encontre todos os pares no menor número de tentativas",
@@ -69,7 +64,6 @@ fun HomeScreen(
             onClick = { navController.navigate("jogo") }
         )
 
-        // Card - Time Attack
         GameModeCard(
             title = "⚡ Time Attack",
             description = "60 segundos para encontrar o máximo de pares possível",
@@ -78,7 +72,6 @@ fun HomeScreen(
             onClick = { navController.navigate("timeAttackGame") }
         )
 
-        // Card - Tema Atual
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -117,7 +110,6 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Botões de navegação secundários
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)

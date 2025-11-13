@@ -47,7 +47,6 @@ fun JogoScreen(
     val configState by configViewModel.uiState.collectAsState()
     val temaPreferido = configState.temaPreferido
     
-    // Navegar para ResultadoScreen quando jogo finalizar
     LaunchedEffect(jogoFinalizado, tentativas) {
         if (jogoFinalizado && tentativas > 0) {
             val temaNome = when (temaPreferido) {
@@ -58,15 +57,12 @@ fun JogoScreen(
                 "comidas" -> "Comidas"
                 else -> temaPreferido.ifBlank { "Padrão" }
             }
-            // Substituir caracteres problemáticos na URL
             val modoEncoded = "Clássico"
             val tentativasEncoded = tentativas.toString()
             val temaEncoded = temaNome.replace("/", "_").replace(" ", "_")
             try {
                 navController.navigate("resultado/$modoEncoded/$tentativasEncoded/$temaEncoded")
-            } catch (e: Exception) {
-                // Ignorar erro de navegação duplicada
-            }
+            } catch (e: Exception) { }
         }
     }
 
@@ -97,7 +93,6 @@ fun JogoScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-        // Header
         Text(
             text = "🎯 Jogo da Memória",
             fontSize = 28.sp,
@@ -105,7 +100,6 @@ fun JogoScreen(
             color = Color.White
         )
 
-        // Card de Pontuação
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -132,7 +126,6 @@ fun JogoScreen(
                     )
                 }
 
-                // Barra de progresso visual
                 LinearProgressIndicator(
                     progress = { pontuacao / 6f },
                     modifier = Modifier
@@ -144,7 +137,6 @@ fun JogoScreen(
             }
         }
 
-        // Mensagem de vitória
         if (jogoFinalizado) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -177,7 +169,6 @@ fun JogoScreen(
             }
         }
 
-        // Grid de cartas 3x4
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             modifier = Modifier
@@ -197,7 +188,6 @@ fun JogoScreen(
             }
         }
 
-        // Botões de ação
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)

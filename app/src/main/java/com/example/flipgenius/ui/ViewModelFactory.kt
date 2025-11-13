@@ -8,9 +8,6 @@ import com.example.flipgenius.ui.viewmodels.ConfigViewModel
 import com.example.flipgenius.ui.viewmodels.JogoViewModel
 import com.example.flipgenius.ui.viewmodels.AdminViewModel
 
-/**
- * Factory simples para criar ViewModels com dependências.
- */
 object ViewModelFactory {
     fun getFactory(): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

@@ -1,19 +1,25 @@
 package com.example.flipgenius.data.repository
 
+import android.content.Context
+import com.example.flipgenius.data.local.AppDatabase
+import com.example.flipgenius.data.local.dao.TimeAttackDao
 import com.example.flipgenius.data.local.entities.PartidaTimeAttack
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 
 class TimeAttackRepository private constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val timeAttackDao: TimeAttackDao
 ) {
     private val collection = firestore.collection("partidas_time_attack")
 
-    val allPartidasFlow: Flow<List<PartidaTimeAttack>> = callbackFlow {
+    private val remoteFlow: Flow<List<PartidaTimeAttack>> = callbackFlow {
         val reg = collection
             .orderBy("pontuacao", Query.Direction.DESCENDING)
             .orderBy("dataPartida", Query.Direction.DESCENDING)
@@ -26,6 +32,12 @@ class TimeAttackRepository private constructor(
                 trySend(list)
             }
         awaitClose { reg.remove() }
+    }
+
+    private val localFlow: Flow<List<PartidaTimeAttack>> = timeAttackDao.getAllFlow()
+
+    val allPartidasFlow: Flow<List<PartidaTimeAttack>> = remoteFlow.flatMapLatest { list ->
+        if (list.isNotEmpty()) flowOf(list) else localFlow
     }
 
     suspend fun insertPartida(partida: PartidaTimeAttack) {
@@ -64,6 +76,9 @@ class TimeAttackRepository private constructor(
     }
 
     companion object {
-        fun create(): TimeAttackRepository = TimeAttackRepository(FirebaseFirestore.getInstance())
+        fun create(context: Context): TimeAttackRepository {
+            val db = AppDatabase.getInstance(context)
+            return TimeAttackRepository(FirebaseFirestore.getInstance(), db.timeAttackDao())
+        }
     }
 }

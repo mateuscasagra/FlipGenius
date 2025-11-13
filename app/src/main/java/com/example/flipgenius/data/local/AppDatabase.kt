@@ -13,10 +13,6 @@ import com.example.flipgenius.data.local.entities.Usuario
 import com.example.flipgenius.data.local.entities.PartidaTimeAttack
 import com.example.flipgenius.data.local.entities.Partida
 
-/**
- * Banco de dados Room central do app.
- * Inclui entidades de usuário e configurações de jogador.
- */
 @Database(
     entities = [Usuario::class, ConfigJogador::class, PartidaTimeAttack::class, Partida::class],
     version = 4,

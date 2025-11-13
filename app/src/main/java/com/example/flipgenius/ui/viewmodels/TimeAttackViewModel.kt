@@ -179,6 +179,7 @@ class TimeAttackViewModel(
                     if(!_jogoFinalizado.value){
                         _jogoFinalizado.value = true
                         _pontuacaoFinal.value = calcularPontuacao()
+                        salvarPartida()
                         updateUiState()
                     }
             }
@@ -195,25 +196,23 @@ class TimeAttackViewModel(
         _pontuacaoFinal.value = pontuacao
         viewModelScope.launch {
             val usuarioId = sessionManager.getUsuarioId()
-            if (usuarioId > 0) {
-                val partida = PartidaTimeAttack(
-                    usuarioId = usuarioId,
-                    nomeJogador = nomeJogadorAtual.ifBlank { "Jogador" },
-                    pontuacao = pontuacao,
-                    temaNome = nomeTemaAtual.ifBlank { "padrao" },
-                    dataPartida = System.currentTimeMillis()
-                )
-                try {
-                    timeAttackRepository.insertPartida(partida)
-                } catch (_: Exception) { }
-            }
+            val partida = PartidaTimeAttack(
+                usuarioId = usuarioId,
+                nomeJogador = nomeJogadorAtual.ifBlank { "Jogador" },
+                pontuacao = pontuacao,
+                temaNome = nomeTemaAtual.ifBlank { "padrao" },
+                dataPartida = System.currentTimeMillis()
+            )
+            try {
+                timeAttackRepository.insertPartida(partida)
+            } catch (_: Exception) { }
         }
     }
 
     companion object {
         fun factory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val timeRepo = TimeAttackRepository.create()
+                val timeRepo = TimeAttackRepository.create(context)
                 val temaRepo = TemaRepository()
                 val session = SessionManager(context.applicationContext)
                 @Suppress("UNCHECKED_CAST")

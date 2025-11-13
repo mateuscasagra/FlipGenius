@@ -8,9 +8,6 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.flipgenius.data.local.entities.ConfigJogador
 
-/**
- * DAO para operações CRUD de ConfigJogador.
- */
 @Dao
 interface ConfigJogadorDao {
 

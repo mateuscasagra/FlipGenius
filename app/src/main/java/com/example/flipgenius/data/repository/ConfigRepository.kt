@@ -14,12 +14,6 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.Base64
 
-/**
- * Repositório para ConfigJogador usando Firebase Firestore.
- * - CRUD completo via Firestore
- * - Erros específicos de conexão tratados
- * - Listener em tempo real via snapshot listener
- */
 class ConfigRepository private constructor(
     private val firestore: FirebaseFirestore
 ) {
@@ -45,7 +39,9 @@ class ConfigRepository private constructor(
         val salt = gerarSalt()
         val hash = hashPassword(senha, salt)
         val now = System.currentTimeMillis()
+        val novoId = now
         val novo = ConfigJogador(
+            id = novoId,
             nomeUsuario = nome,
             senhaHash = hash,
             senhaSalt = salt,
@@ -73,7 +69,6 @@ class ConfigRepository private constructor(
                 nomeUsuario = novoNome,
                 dataAtualizacao = System.currentTimeMillis()
             )
-            // Firestore não renomeia doc; copiar novo e apagar antigo
             collection.document(novoNome).set(atualizado.toMap()).await()
             collection.document(antigoNome).delete().await()
             Result.success(Unit)
@@ -165,6 +160,7 @@ class ConfigRepository private constructor(
     }
 
     private fun Map<String, Any>.toConfig(): ConfigJogador = ConfigJogador(
+        id = (this["usuarioId"] as? Number)?.toLong() ?: 0L,
         nomeUsuario = this["nomeUsuario"] as String,
         senhaHash = this["senhaHash"] as String,
         senhaSalt = this["senhaSalt"] as String,
@@ -177,6 +173,7 @@ class ConfigRepository private constructor(
         (data ?: emptyMap()).toConfig()
 
     private fun ConfigJogador.toMap(): Map<String, Any> = mapOf(
+        "usuarioId" to id,
         "nomeUsuario" to nomeUsuario,
         "senhaHash" to senhaHash,
         "senhaSalt" to senhaSalt,

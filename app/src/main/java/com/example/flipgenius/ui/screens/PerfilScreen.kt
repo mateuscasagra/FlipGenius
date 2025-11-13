@@ -20,9 +20,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.flipgenius.ui.ViewModelFactory
 import com.example.flipgenius.ui.viewmodels.ConfigViewModel
 
-/**
- * Tela de Perfil: exibe dados, edição de nome, troca de senha, logout e deletar conta.
- */
 @Composable
 fun PerfilScreen(
     navController: NavHostController,
@@ -56,7 +53,6 @@ fun PerfilScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Header
         Text(
             text = "Meu Perfil",
             fontSize = 32.sp,
@@ -70,7 +66,6 @@ fun PerfilScreen(
             color = Color.Gray
         )
 
-        // Card - Informações do Perfil
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -96,7 +91,6 @@ fun PerfilScreen(
             }
         }
 
-        // Card - Editar Nome
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -147,7 +141,6 @@ fun PerfilScreen(
             }
         }
 
-        // Card - Trocar Senha
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -232,7 +225,6 @@ fun PerfilScreen(
             }
         }
 
-        // Card - Ações
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -276,7 +268,6 @@ fun PerfilScreen(
             }
         }
 
-        // Mensagens de Feedback
         uiState.error?.let {
             Card(
                 modifier = Modifier.fillMaxWidth(),

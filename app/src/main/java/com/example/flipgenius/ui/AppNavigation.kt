@@ -94,9 +94,7 @@ fun AppNavigation() {
                                 session.salvarUsuario(0L, criado.nomeUsuario, false)
                                 currentUserName = criado.nomeUsuario
                                 navController.navigate("home")
-                            } catch (_: Exception) {
-                                // Falha de cadastro (ex.: regras do Firestore). Permanece na tela.
-                            }
+                            } catch (_: Exception) { }
                         }
                     }
                 )

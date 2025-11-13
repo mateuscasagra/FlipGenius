@@ -104,6 +104,10 @@ fun TimeAttackRankingScreen(
                     Text(text = "Limpar histórico")
                 }
 
+                if (state.partidas.isEmpty()) {
+                    Text(text = "Nenhuma partida encontrada", color = Color.Gray)
+                }
+
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(vertical = 8.dp),
@@ -111,6 +115,18 @@ fun TimeAttackRankingScreen(
                 ) {
                     itemsIndexed(state.partidas) { index, partida ->
                         RankingItem(index = index, partida = partida)
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(onClick = { navController.popBackStack() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE))) {
+                        Text("Voltar")
+                    }
+                    Button(onClick = { navController.navigate("home") }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE))) {
+                        Text("Continuar")
                     }
                 }
             }

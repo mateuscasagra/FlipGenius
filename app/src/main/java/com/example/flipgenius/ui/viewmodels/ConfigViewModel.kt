@@ -10,9 +10,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/**
- * ViewModel para gerenciar estado de configurações e perfil do jogador.
- */
 data class ConfigUiState(
     val currentUserId: Long? = null,
     val nomeUsuario: String = "",

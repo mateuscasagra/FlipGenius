@@ -1,15 +1,21 @@
 package com.example.flipgenius.data.repository
 
+import android.content.Context
+import com.example.flipgenius.data.local.AppDatabase
+import com.example.flipgenius.data.local.dao.PartidaDao
 import com.example.flipgenius.data.local.entities.Partida
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 
 class PartidaRepository private constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val partidaDao: PartidaDao
 ) {
     private val collection = firestore.collection("partidas_classico")
 
@@ -23,49 +29,19 @@ class PartidaRepository private constructor(
         }
     }
 
-    fun getAllPartidas(): Flow<List<Partida>> = callbackFlow {
+    private val remoteFlowAll: Flow<List<Partida>> = callbackFlow {
         val reg = collection
             .orderBy("tentativas", Query.Direction.ASCENDING)
-            .orderBy("dataPartida", Query.Direction.DESCENDING)
             .addSnapshotListener { snap, err ->
-                if (err != null) {
-                    trySend(emptyList())
-                    return@addSnapshotListener
-                }
+                if (err != null) { trySend(emptyList()); return@addSnapshotListener }
                 val list = snap?.documents?.mapNotNull { it.data?.toPartida() } ?: emptyList()
                 trySend(list)
             }
         awaitClose { reg.remove() }
     }
 
-    fun getPartidasByUsuario(usuarioId: Long): Flow<List<Partida>> = callbackFlow {
-        val reg = collection
-            .whereEqualTo("usuarioId", usuarioId)
-            .orderBy("tentativas", Query.Direction.ASCENDING)
-            .addSnapshotListener { snap, err ->
-                if (err != null) {
-                    trySend(emptyList())
-                    return@addSnapshotListener
-                }
-                val list = snap?.documents?.mapNotNull { it.data?.toPartida() } ?: emptyList()
-                trySend(list)
-            }
-        awaitClose { reg.remove() }
-    }
-
-    fun getPartidasByTema(tema: String): Flow<List<Partida>> = callbackFlow {
-        val reg = collection
-            .whereEqualTo("tema", tema)
-            .orderBy("tentativas", Query.Direction.ASCENDING)
-            .addSnapshotListener { snap, err ->
-                if (err != null) {
-                    trySend(emptyList())
-                    return@addSnapshotListener
-                }
-                val list = snap?.documents?.mapNotNull { it.data?.toPartida() } ?: emptyList()
-                trySend(list)
-            }
-        awaitClose { reg.remove() }
+    fun getAllPartidas(): Flow<List<Partida>> = remoteFlowAll.flatMapLatest { list ->
+        if (list.isNotEmpty()) flowOf(list) else partidaDao.getAllPartidas()
     }
 
     suspend fun limparHistorico(): Result<Unit> {
@@ -78,10 +54,6 @@ class PartidaRepository private constructor(
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
-
-    suspend fun deletarPartida(id: Long): Result<Unit> {
-        return Result.failure(UnsupportedOperationException("Deletar por id local não suportado"))
     }
 
     private fun Partida.toMap(): Map<String, Any> = mapOf(
@@ -106,6 +78,9 @@ class PartidaRepository private constructor(
     }
 
     companion object {
-        fun create(): PartidaRepository = PartidaRepository(FirebaseFirestore.getInstance())
+        fun create(context: Context): PartidaRepository {
+            val db = AppDatabase.getInstance(context)
+            return PartidaRepository(FirebaseFirestore.getInstance(), db.partidaDao())
+        }
     }
 }

@@ -16,9 +16,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.graphics.Color
 
-/**
- * Bottom navigation simples entre as telas principais.
- */
 @Composable
 fun BottomNavBar(navController: NavHostController) {
     val items = listOf(

@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 class JogoViewModel(context: Context, tema: String = "padrao") : ViewModel() {
     
     private val sessionManager = SessionManager(context.applicationContext)
-    private val partidaRepository = PartidaRepository.create()
+    private val partidaRepository = PartidaRepository.create(context)
     private val temaAtual = tema.ifBlank { "padrao" }
     
     private val _cartas = MutableStateFlow<List<CartaJogo>>(emptyList())
@@ -39,10 +39,8 @@ class JogoViewModel(context: Context, tema: String = "padrao") : ViewModel() {
     }
     
     fun iniciarJogo() {
-        // Grid 3x4 = 12 cartas = 6 pares
         val numeros = listOf(1, 2, 3, 4, 5, 6)
         
-        // Criar pares de cartas usando flatMap para duplicar cada número
         val cartasPares = numeros.flatMap { numero ->
             listOf(
                 CartaJogo(id = numero * 2 - 1, conteudo = numero.toString()),
@@ -50,10 +48,8 @@ class JogoViewModel(context: Context, tema: String = "padrao") : ViewModel() {
             )
         }
         
-        // Embaralhar as cartas usando shuffled()
         val cartasEmbaralhadas = cartasPares.shuffled()
         
-        // Adicionar índices únicos usando mapIndexed para garantir IDs únicos
         val cartasComIndices = cartasEmbaralhadas.mapIndexed { index, carta ->
             carta.copy(id = index)
         }
@@ -73,29 +69,24 @@ class JogoViewModel(context: Context, tema: String = "padrao") : ViewModel() {
         if (carta == null || carta.virada || carta.encontrada) return
         
         viewModelScope.launch {
-            // Atualizar a carta para virada
             val cartasAtualizadas = _cartas.value.map { c ->
                 if (c.id == cartaId) c.copy(virada = true) else c
             }
             _cartas.value = cartasAtualizadas
             
-            // Adicionar à lista de cartas viradas
             cartasViradas = cartasViradas + cartaId
             
-            // Se duas cartas estão viradas, verificar se são iguais
             if (cartasViradas.size == 2) {
                 podeVirar = false
-                // Incrementar tentativas
                 _tentativas.value = _tentativas.value + 1
                 
-                delay(1000) // Aguardar 1 segundo para o jogador ver as cartas
+                delay(1000)
                 
                 val primeiraCarta = _cartas.value.find { it.id == cartasViradas[0] }
                 val segundaCarta = _cartas.value.find { it.id == cartasViradas[1] }
                 
                     if (primeiraCarta != null && segundaCarta != null) {
                     if (primeiraCarta.conteudo == segundaCarta.conteudo) {
-                        // Cartas iguais - marcar como encontradas
                         val cartasAtualizadas = _cartas.value.map { c ->
                             if (c.id == cartasViradas[0] || c.id == cartasViradas[1]) {
                                 c.copy(encontrada = true, virada = true)
@@ -106,14 +97,12 @@ class JogoViewModel(context: Context, tema: String = "padrao") : ViewModel() {
                         _cartas.value = cartasAtualizadas
                         _pontuacao.value = _pontuacao.value + 1
                         
-                        // Verificar se o jogo terminou
                         val todasEncontradas = _cartas.value.all { it.encontrada }
                         if (todasEncontradas) {
                             _jogoFinalizado.value = true
                             salvarPartida()
                         }
                     } else {
-                        // Cartas diferentes - desvirar
                         val cartasAtualizadas = _cartas.value.map { c ->
                             if (c.id == cartasViradas[0] || c.id == cartasViradas[1]) {
                                 c.copy(virada = false)
