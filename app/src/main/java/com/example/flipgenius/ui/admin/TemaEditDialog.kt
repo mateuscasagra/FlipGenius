@@ -19,15 +19,17 @@ import com.example.flipgenius.ui.theme.Purple40
 @Composable
 fun TemaEditDialog(
     onDismiss: () -> Unit,
-    onSave: (String, String) -> Unit
+    onSave: (String, String) -> Unit,
+    initialNome: String = "",
+    initialEmojis: String = ""
 ) {
-    var nomeTema by remember { mutableStateOf("") }
-    var emojisTema by remember { mutableStateOf("") }
+    var nomeTema by remember { mutableStateOf(initialNome) }
+    var emojisTema by remember { mutableStateOf(initialEmojis) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
 
-        title = { Text("Adicionar Novo Tema",
+        title = { Text("Editar Tema",
             color = Purple40) },
 
         text = {

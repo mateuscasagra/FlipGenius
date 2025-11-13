@@ -9,6 +9,7 @@ class FirebaseService(private val firestore: FirebaseFirestore = FirebaseFiresto
     private val temasRef = firestore.collection("temas")
     private val partidasClassicoRef = firestore.collection("partidas_classico")
     private val partidasTimeAttackRef = firestore.collection("partidas_time_attack")
+    private val contasRef = firestore.collection("configJogador")
 
     suspend fun listarTemas(): List<Tema> {
         val snap = temasRef.get().await()
@@ -34,6 +35,15 @@ class FirebaseService(private val firestore: FirebaseFirestore = FirebaseFiresto
 
     suspend fun deletarTema(idOuNome: String) {
         temasRef.document(idOuNome.lowercase()).delete().await()
+    }
+
+    suspend fun listarContas(): List<String> {
+        val snap = contasRef.get().await()
+        return snap.documents.mapNotNull { it.getString("nomeUsuario") }
+    }
+
+    suspend fun deletarConta(nome: String) {
+        contasRef.document(nome).delete().await()
     }
 
     suspend fun adicionarPartidaClassico(partida: Partida) {

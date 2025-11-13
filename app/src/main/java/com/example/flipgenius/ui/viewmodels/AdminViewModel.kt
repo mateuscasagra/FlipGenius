@@ -7,12 +7,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.text.BreakIterator
 
 data class AdminUiState(
     val selectedTabIndex: Int = 0,
     val showAddTemaDialog: Boolean = false,
     val temasList: List<Pair<String, String>> = emptyList(),
-    val accountList: List<String> = emptyList()
+    val accountList: List<String> = emptyList(),
+    val showEditTemaDialog: Boolean = false,
+    val editNome: String = "",
+    val editEmojis: String = ""
 )
 
 class AdminViewModel : ViewModel() {
@@ -23,6 +27,7 @@ class AdminViewModel : ViewModel() {
 
     init {
         carregarTemas()
+        carregarContas()
     }
 
     fun onTabChange(index: Int) {
@@ -39,7 +44,7 @@ class AdminViewModel : ViewModel() {
 
     fun onAddTheme(nome: String, emojis: String) {
         if (nome.isBlank()) return
-        val lista = emojis.toCharArray().map { it.toString() }.filter { it.isNotBlank() }
+        val lista = splitEmojis(emojis)
         viewModelScope.launch {
             try {
                 service.adicionarTema(nome, lista)
@@ -50,8 +55,12 @@ class AdminViewModel : ViewModel() {
         }
     }
 
+    fun onStartEditTheme(nome: String, emojisPreview: String) {
+        _uiState.update { it.copy(showEditTemaDialog = true, editNome = nome, editEmojis = emojisPreview) }
+    }
+
     fun onEditTheme(nome: String, emojis: String) {
-        val lista = emojis.toCharArray().map { it.toString() }.filter { it.isNotBlank() }
+        val lista = splitEmojis(emojis)
         viewModelScope.launch {
             try {
                 service.editarTema(nome, nome, lista)
@@ -69,6 +78,19 @@ class AdminViewModel : ViewModel() {
         }
     }
 
+    fun onDismissEditDialog() {
+        _uiState.update { it.copy(showEditTemaDialog = false, editNome = "", editEmojis = "") }
+    }
+
+    private fun carregarContas() {
+        viewModelScope.launch {
+            try {
+                val contas = service.listarContas()
+                _uiState.update { it.copy(accountList = contas) }
+            } catch (_: Exception) { }
+        }
+    }
+
     private fun carregarTemas() {
         viewModelScope.launch {
             try {
@@ -78,5 +100,28 @@ class AdminViewModel : ViewModel() {
         }
     }
 
-    fun onDeleteAccount(email: String) { }
+    fun onDeleteAccount(email: String) {
+        viewModelScope.launch {
+            try {
+                service.deletarConta(email)
+                carregarContas()
+            } catch (_: Exception) { }
+        }
+    }
+
+    private fun splitEmojis(input: String): List<String> {
+        val cleaned = input.replace(Regex("[,\\s]+"), "")
+        val bi = BreakIterator.getCharacterInstance()
+        bi.setText(cleaned)
+        val out = mutableListOf<String>()
+        var start = bi.first()
+        var end = bi.next()
+        while (end != BreakIterator.DONE) {
+            val token = cleaned.substring(start, end)
+            if (token.isNotBlank()) out.add(token)
+            start = end
+            end = bi.next()
+        }
+        return out
+    }
 }

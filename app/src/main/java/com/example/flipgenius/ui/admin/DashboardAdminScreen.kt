@@ -85,7 +85,7 @@ fun DashboardAdminScreen(
             when (uiState.selectedTabIndex) {
                 0 -> AdminTemasTab(
                     temasList = uiState.temasList,
-                    onEdit = { nome -> viewModel.onEditTheme(nome, "") },
+                    onEdit = { nome, emojis -> viewModel.onStartEditTheme(nome, emojis) },
                     onDelete = { nome -> viewModel.onDeleteTheme(nome) }
                 )
                 1 -> AdminContasTab(
@@ -105,13 +105,22 @@ fun DashboardAdminScreen(
                 }
             )
         }
+
+        if (uiState.showEditTemaDialog) {
+            TemaEditDialog(
+                onDismiss = { viewModel.onDismissEditDialog() },
+                onSave = { _, emojis -> viewModel.onEditTheme(uiState.editNome, emojis) },
+                initialNome = uiState.editNome,
+                initialEmojis = uiState.editEmojis
+            )
+        }
     }
 }
 
 @Composable
 private fun AdminTemasTab(
     temasList: List<Pair<String, String>>,
-    onEdit: (String) -> Unit,
+    onEdit: (String, String) -> Unit,
     onDelete: (String) -> Unit
 ) {
 
@@ -120,7 +129,7 @@ private fun AdminTemasTab(
             TemaAdminItem(
                 nome = nome,
                 emojisPreview = emojis,
-                onEdit = { onEdit(nome) },
+                onEdit = { onEdit(nome, emojis) },
                 onDelete = { onDelete(nome) }
             )
         }
