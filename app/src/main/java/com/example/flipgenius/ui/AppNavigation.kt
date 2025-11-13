@@ -34,9 +34,6 @@ import com.example.flipgenius.ui.screens.RankingScreen
 import com.example.flipgenius.ui.viewmodels.ConfigViewModel
 import com.example.flipgenius.ui.viewmodels.JogoViewModel
 import com.example.flipgenius.ui.ViewModelFactory
-import kotlinx.coroutines.launch
-import com.example.flipgenius.data.local.AppDatabase
-import com.example.flipgenius.data.repository.AuthRepository
 import com.example.flipgenius.ui.utils.SessionManager
 
 @Composable
@@ -48,14 +45,12 @@ fun AppNavigation() {
     val scope = rememberCoroutineScope()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val db = remember { AppDatabase.getInstance(context) }
-    val authRepo = remember { AuthRepository(db.usuarioDao()) }
     val session = remember { SessionManager(context) }
 
 
     Scaffold(
         bottomBar = {
-            if (currentRoute in setOf("home", "temas", "perfil")) {
+            if (currentRoute in setOf("home", "temas", "perfil", "ranking", "dashboard")) {
                 BottomNavBar(navController)
             }
         }
@@ -67,11 +62,10 @@ fun AppNavigation() {
                 LoginScreen(
                     onUserLoginClick = { user, pass ->
                         scope.launch {
-                            val result = authRepo.login(user, pass)
-                            if (result.isSuccess) {
-                                val u = result.getOrNull()!!
-                                session.salvarUsuario(u.id, u.nome, u.isAdmin)
-                                currentUserName = u.nome
+                            val ok = repo.validarLogin(user, pass)
+                            if (ok) {
+                                session.salvarUsuario(0L, user, false)
+                                currentUserName = user
                                 navController.navigate("home")
                             } else {
                                 navController.navigate("cadastro")
@@ -88,21 +82,30 @@ fun AppNavigation() {
                     navController = navController,
                     onCadastroClick = { user, pass ->
                         scope.launch {
-                            val result = authRepo.cadastrarUsuario(user, pass)
-                            if (result.isSuccess) {
-                                val u = result.getOrNull()!!
-                                session.salvarUsuario(u.id, u.nome, u.isAdmin)
-                                currentUserName = u.nome
-                                navController.navigate("home")
-                            }
+                            val criado = repo.criarOuObter(user, pass)
+                            session.salvarUsuario(0L, criado.nomeUsuario, false)
+                            currentUserName = criado.nomeUsuario
+                            navController.navigate("home")
                         }
                     }
                 )
             }
 
-            composable("dashboard") { DashboardAdminScreen() }
+            composable("dashboard") {
+                LaunchedEffect(Unit) {
+                    if (!session.isAdmin()) {
+                        navController.navigate("loginAdmin")
+                    }
+                }
+                if (session.isAdmin()) {
+                    DashboardAdminScreen()
+                }
+            }
 
             composable("home") {
+                LaunchedEffect(Unit) {
+                    if (!session.isLoggedIn()) navController.navigate("login")
+                }
                 val vm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
                 LaunchedEffect(currentUserName) {
                     currentUserName?.let {
@@ -114,6 +117,7 @@ fun AppNavigation() {
             }
 
             composable("temas") {
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
                 val vm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
                 LaunchedEffect(currentUserName) {
                     currentUserName?.let {
@@ -125,6 +129,7 @@ fun AppNavigation() {
             }
 
             composable("jogo") { 
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
                 val configVm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
                 val configState by configVm.uiState.collectAsState()
                 val tema = configState.temaPreferido.ifBlank { "padrao" }
@@ -147,9 +152,15 @@ fun AppNavigation() {
                 )
             }
 
-            composable("perfil") { PerfilScreen(navController = navController, currentUserName = currentUserName) }
+            composable("perfil") { 
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
+                PerfilScreen(navController = navController, currentUserName = currentUserName) 
+            }
 
-            composable("ranking") { RankingScreen(navController = navController) }
+            composable("ranking") { 
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
+                RankingScreen(navController = navController) 
+            }
 
             composable(
                 route = "resultado/{modo}/{tentativas}/{tema}",
@@ -170,9 +181,15 @@ fun AppNavigation() {
                 )
             }
 
-            composable("timeAttackGame") { com.example.flipgenius.ui.screens.TimeAttackGameScreen(navController = navController) }
+            composable("timeAttackGame") { 
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
+                com.example.flipgenius.ui.screens.TimeAttackGameScreen(navController = navController) 
+            }
 
-            composable("timeAttackRanking") { com.example.flipgenius.ui.screens.TimeAttackRankingScreen(navController = navController) }
+            composable("timeAttackRanking") { 
+                LaunchedEffect(Unit) { if (!session.isLoggedIn()) navController.navigate("login") }
+                com.example.flipgenius.ui.screens.TimeAttackRankingScreen(navController = navController) 
+            }
         }
     }
 

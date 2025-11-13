@@ -32,17 +32,25 @@ class ConfigViewModel(
 
     fun carregarPerfilPorNome(nome: String) {
         viewModelScope.launch {
-            val config = repository.obterPorNome(nome)
-            if (config == null) {
-                _uiState.update { it.copy(error = "Usuário não encontrado") }
-            } else setFromConfig(config)
+            try {
+                val config = repository.obterPorNome(nome)
+                if (config == null) {
+                    _uiState.update { it.copy(error = "Usuário não encontrado") }
+                } else setFromConfig(config)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
         }
     }
 
     fun observarPerfil(nome: String) {
         viewModelScope.launch {
-            repository.observarConfig(nome).collect { cfg ->
-                if (cfg != null) setFromConfig(cfg)
+            try {
+                repository.observarConfig(nome).collect { cfg ->
+                    if (cfg != null) setFromConfig(cfg)
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
             }
         }
     }

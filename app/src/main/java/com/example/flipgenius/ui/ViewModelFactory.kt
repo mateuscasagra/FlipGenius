@@ -6,6 +6,14 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.flipgenius.data.repository.ConfigRepository
 import com.example.flipgenius.ui.viewmodels.ConfigViewModel
 import com.example.flipgenius.ui.viewmodels.JogoViewModel
+import com.example.flipgenius.ui.viewmodels.RankingViewModel
+import com.example.flipgenius.ui.viewmodels.TimeAttackRankingViewModel
+import com.example.flipgenius.ui.viewmodels.TimeAttackViewModel
+import com.example.flipgenius.ui.viewmodels.AdminViewModel
+import com.example.flipgenius.data.local.AppDatabase
+import com.example.flipgenius.data.repository.PartidaRepository
+import com.example.flipgenius.data.repository.TimeAttackRepository
+import com.example.flipgenius.data.repository.TemaRepository
 
 /**
  * Factory simples para criar ViewModels com dependências.
@@ -18,6 +26,9 @@ object ViewModelFactory {
                     val repo = ConfigRepository.create()
                     ConfigViewModel(repo) as T
                 }
+                modelClass.isAssignableFrom(AdminViewModel::class.java) -> {
+                    AdminViewModel() as T
+                }
                 else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
             }
         }
@@ -28,6 +39,46 @@ object ViewModelFactory {
             return when {
                 modelClass.isAssignableFrom(JogoViewModel::class.java) -> {
                     JogoViewModel(context, tema) as T
+                }
+                else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
+            }
+        }
+    }
+
+    fun getRankingFactory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return when {
+                modelClass.isAssignableFrom(RankingViewModel::class.java) -> {
+                    val db = AppDatabase.getInstance(context)
+                    val repo = PartidaRepository(db.partidaDao())
+                    RankingViewModel(repo) as T
+                }
+                else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
+            }
+        }
+    }
+
+    fun getTimeAttackRankingFactory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return when {
+                modelClass.isAssignableFrom(TimeAttackRankingViewModel::class.java) -> {
+                    val db = AppDatabase.getInstance(context)
+                    val repo = TimeAttackRepository(db.timeAttackDao())
+                    TimeAttackRankingViewModel(repo) as T
+                }
+                else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
+            }
+        }
+    }
+
+    fun getTimeAttackFactory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return when {
+                modelClass.isAssignableFrom(TimeAttackViewModel::class.java) -> {
+                    val db = AppDatabase.getInstance(context)
+                    val timeRepo = TimeAttackRepository(db.timeAttackDao())
+                    val temaRepo = TemaRepository()
+                    TimeAttackViewModel(timeRepo, temaRepo) as T
                 }
                 else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
             }
