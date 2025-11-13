@@ -21,7 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flipgenius.data.repository.ConfigRepository
 import com.example.flipgenius.ui.admin.DashboardAdminScreen
 import com.example.flipgenius.ui.auth.LoginScreen
-import com.example.flipgenius.ui.auth.RegisterScreen
+import com.example.flipgenius.ui.screens.CadastroScreen
 import com.example.flipgenius.ui.components.BottomNavBar
 import com.example.flipgenius.ui.screens.EscolherTemaScreen
 import com.example.flipgenius.ui.screens.HomeScreen
@@ -31,6 +31,9 @@ import com.example.flipgenius.ui.screens.RankingScreen
 import com.example.flipgenius.ui.viewmodels.ConfigViewModel
 import com.example.flipgenius.ui.ViewModelFactory
 import kotlinx.coroutines.launch
+import com.example.flipgenius.data.local.AppDatabase
+import com.example.flipgenius.data.repository.AuthRepository
+import com.example.flipgenius.ui.utils.SessionManager
 
 @Composable
 fun AppNavigation() {
@@ -41,7 +44,10 @@ fun AppNavigation() {
     val scope = rememberCoroutineScope()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    
+    val db = remember { AppDatabase.getInstance(context) }
+    val authRepo = remember { AuthRepository(db.usuarioDao()) }
+    val session = remember { SessionManager(context) }
+
 
     Scaffold(
         bottomBar = {
@@ -50,15 +56,18 @@ fun AppNavigation() {
             }
         }
     ) { innerPadding ->
-        NavHost(navController = navController, startDestination = "home", modifier = Modifier.padding(innerPadding)) {
+        val startDest = remember { if (session.isLoggedIn()) "home" else "login" }
+        NavHost(navController = navController, startDestination = startDest, modifier = Modifier.padding(innerPadding)) {
 
             composable("login") {
                 LoginScreen(
                     onUserLoginClick = { user, pass ->
                         scope.launch {
-                            val ok = repo.validarLogin(user, pass)
-                            if (ok) {
-                                currentUserName = user
+                            val result = authRepo.login(user, pass)
+                            if (result.isSuccess) {
+                                val u = result.getOrNull()!!
+                                session.salvarUsuario(u.id, u.nome, u.isAdmin)
+                                currentUserName = u.nome
                                 navController.navigate("home")
                             } else {
                                 navController.navigate("cadastro")
@@ -71,15 +80,19 @@ fun AppNavigation() {
             }
 
             composable("cadastro") {
-                RegisterScreen(
-                    onRegisterClick = { user, pass ->
+                CadastroScreen(
+                    navController = navController,
+                    onCadastroClick = { user, pass ->
                         scope.launch {
-                            repo.criarOuObter(user, pass)
-                            currentUserName = user
-                            navController.navigate("home")
+                            val result = authRepo.cadastrarUsuario(user, pass)
+                            if (result.isSuccess) {
+                                val u = result.getOrNull()!!
+                                session.salvarUsuario(u.id, u.nome, u.isAdmin)
+                                currentUserName = u.nome
+                                navController.navigate("home")
+                            }
                         }
-                    },
-                    onNavigateToLogin = { navController.navigate("login") }
+                    }
                 )
             }
 

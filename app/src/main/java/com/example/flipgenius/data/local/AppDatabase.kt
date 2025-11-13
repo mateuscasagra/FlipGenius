@@ -7,23 +7,26 @@ import androidx.room.RoomDatabase
 import com.example.flipgenius.data.local.dao.ConfigJogadorDao
 import com.example.flipgenius.data.local.dao.TimeAttackDao
 import com.example.flipgenius.data.local.dao.UsuarioDao
+import com.example.flipgenius.data.local.dao.PartidaDao
 import com.example.flipgenius.data.local.entities.ConfigJogador
 import com.example.flipgenius.data.local.entities.Usuario
 import com.example.flipgenius.data.local.entities.PartidaTimeAttack
+import com.example.flipgenius.data.local.entities.Partida
 
 /**
  * Banco de dados Room central do app.
  * Inclui entidades de usuário e configurações de jogador.
  */
 @Database(
-    entities = [Usuario::class, ConfigJogador::class, PartidaTimeAttack::class],
-    version = 2,
+    entities = [Usuario::class, ConfigJogador::class, PartidaTimeAttack::class, Partida::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun usuarioDao(): UsuarioDao
     abstract fun configJogadorDao(): ConfigJogadorDao
     abstract fun timeAttackDao(): TimeAttackDao
+    abstract fun partidaDao(): PartidaDao
 
     companion object {
         @Volatile
