@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModelProvider
-import com.example.flipgenius.data.local.AppDatabase
 import com.example.flipgenius.data.local.entities.PartidaTimeAttack
 import com.example.flipgenius.data.repository.TimeAttackRepository
 import com.example.flipgenius.data.repository.TemaRepository
@@ -214,8 +213,7 @@ class TimeAttackViewModel(
     companion object {
         fun factory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val db = AppDatabase.getInstance(context)
-                val timeRepo = TimeAttackRepository(db.timeAttackDao())
+                val timeRepo = TimeAttackRepository.create()
                 val temaRepo = TemaRepository()
                 val session = SessionManager(context.applicationContext)
                 @Suppress("UNCHECKED_CAST")

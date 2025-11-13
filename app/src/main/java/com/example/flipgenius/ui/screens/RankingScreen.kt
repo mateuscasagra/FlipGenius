@@ -137,8 +137,8 @@ private fun RankingItem(
         ) {
             Text(text = "${posicao}º", color = primaryColor, fontWeight = FontWeight.Bold)
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Usuário ${partida.usuarioId}", color = Color.White, fontWeight = FontWeight.SemiBold)
-                Text(text = partida.tema, color = Color.Gray)
+                Text(text = partida.tema, color = Color.White, fontWeight = FontWeight.SemiBold)
+                Text(text = "Clássico", color = Color.Gray)
             }
             Text(text = "${partida.tentativas} tent.", color = primaryColor, fontWeight = FontWeight.Bold)
         }

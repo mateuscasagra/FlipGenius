@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.flipgenius.data.local.AppDatabase
 import com.example.flipgenius.data.local.entities.Partida
 import com.example.flipgenius.data.repository.PartidaRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,8 +48,7 @@ class RankingViewModel(
     companion object {
         fun factory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val db = AppDatabase.getInstance(context)
-                val repo = PartidaRepository(db.partidaDao())
+                val repo = PartidaRepository.create()
                 @Suppress("UNCHECKED_CAST")
                 return RankingViewModel(repo) as T
             }

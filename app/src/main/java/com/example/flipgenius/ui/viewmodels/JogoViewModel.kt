@@ -3,7 +3,6 @@ package com.example.flipgenius.ui.viewmodels
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.flipgenius.data.local.AppDatabase
 import com.example.flipgenius.data.local.entities.Partida
 import com.example.flipgenius.data.repository.PartidaRepository
 import com.example.flipgenius.model.CartaJogo
@@ -17,8 +16,7 @@ import kotlinx.coroutines.launch
 class JogoViewModel(context: Context, tema: String = "padrao") : ViewModel() {
     
     private val sessionManager = SessionManager(context.applicationContext)
-    private val db = AppDatabase.getInstance(context.applicationContext)
-    private val partidaRepository = PartidaRepository(db.partidaDao())
+    private val partidaRepository = PartidaRepository.create()
     private val temaAtual = tema.ifBlank { "padrao" }
     
     private val _cartas = MutableStateFlow<List<CartaJogo>>(emptyList())
@@ -135,10 +133,10 @@ class JogoViewModel(context: Context, tema: String = "padrao") : ViewModel() {
     
     private fun salvarPartida() {
         viewModelScope.launch {
-            val usuarioId = sessionManager.getUsuarioId()
-            if (usuarioId > 0) {
+            val nomeUsuario = sessionManager.getNomeUsuario()
+            if (nomeUsuario.isNotBlank()) {
                 val partida = Partida(
-                    usuarioId = usuarioId,
+                    usuarioId = 0L,
                     tema = temaAtual,
                     tentativas = _tentativas.value
                 )
@@ -149,4 +147,3 @@ class JogoViewModel(context: Context, tema: String = "padrao") : ViewModel() {
     
     fun getTema(): String = temaAtual
 }
-

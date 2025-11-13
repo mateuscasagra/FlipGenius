@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModelProvider
-import com.example.flipgenius.data.local.AppDatabase
 import com.example.flipgenius.data.repository.TimeAttackRepository
 import com.example.flipgenius.ui.screens.RankingUiState
 import com.example.flipgenius.ui.utils.SessionManager
@@ -57,9 +56,13 @@ class TimeAttackRankingViewModel(
     companion object {
         fun factory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
+<<<<<<< HEAD
                 val db = AppDatabase.getInstance(context)
                 val repo = TimeAttackRepository(db.timeAttackDao())
                 val session = SessionManager(context.applicationContext)
+=======
+                val repo = TimeAttackRepository.create()
+>>>>>>> 20f133e (FIREBASE)
                 @Suppress("UNCHECKED_CAST")
                 return TimeAttackRankingViewModel(repo, session) as T
             }

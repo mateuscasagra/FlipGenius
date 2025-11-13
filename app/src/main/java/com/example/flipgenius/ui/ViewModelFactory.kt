@@ -10,7 +10,6 @@ import com.example.flipgenius.ui.viewmodels.RankingViewModel
 import com.example.flipgenius.ui.viewmodels.TimeAttackRankingViewModel
 import com.example.flipgenius.ui.viewmodels.TimeAttackViewModel
 import com.example.flipgenius.ui.viewmodels.AdminViewModel
-import com.example.flipgenius.data.local.AppDatabase
 import com.example.flipgenius.data.repository.PartidaRepository
 import com.example.flipgenius.data.repository.TimeAttackRepository
 import com.example.flipgenius.data.repository.TemaRepository
@@ -50,8 +49,7 @@ object ViewModelFactory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return when {
                 modelClass.isAssignableFrom(RankingViewModel::class.java) -> {
-                    val db = AppDatabase.getInstance(context)
-                    val repo = PartidaRepository(db.partidaDao())
+                    val repo = PartidaRepository.create()
                     RankingViewModel(repo) as T
                 }
                 else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
@@ -63,10 +61,15 @@ object ViewModelFactory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return when {
                 modelClass.isAssignableFrom(TimeAttackRankingViewModel::class.java) -> {
+<<<<<<< HEAD
                     val db = AppDatabase.getInstance(context)
                     val repo = TimeAttackRepository(db.timeAttackDao())
                     val session = SessionManager(context.applicationContext)
                     TimeAttackRankingViewModel(repo, session) as T
+=======
+                    val repo = TimeAttackRepository.create()
+                    TimeAttackRankingViewModel(repo) as T
+>>>>>>> 20f133e (FIREBASE)
                 }
                 else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
             }
@@ -77,8 +80,7 @@ object ViewModelFactory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return when {
                 modelClass.isAssignableFrom(TimeAttackViewModel::class.java) -> {
-                    val db = AppDatabase.getInstance(context)
-                    val timeRepo = TimeAttackRepository(db.timeAttackDao())
+                    val timeRepo = TimeAttackRepository.create()
                     val temaRepo = TemaRepository()
                     val session = SessionManager(context.applicationContext)
                     TimeAttackViewModel(timeRepo, temaRepo, session) as T
