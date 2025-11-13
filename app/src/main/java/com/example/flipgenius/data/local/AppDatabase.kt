@@ -19,11 +19,7 @@ import com.example.flipgenius.data.local.entities.Partida
  */
 @Database(
     entities = [Usuario::class, ConfigJogador::class, PartidaTimeAttack::class, Partida::class],
-<<<<<<< HEAD
     version = 4,
-=======
-    version = 3,
->>>>>>> 025c903dee6341de1a55833344512f3a656bc1fa
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
