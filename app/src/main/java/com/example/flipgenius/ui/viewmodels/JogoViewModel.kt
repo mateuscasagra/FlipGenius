@@ -1,21 +1,34 @@
 package com.example.flipgenius.ui.viewmodels
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flipgenius.data.local.AppDatabase
+import com.example.flipgenius.data.local.entities.Partida
+import com.example.flipgenius.data.repository.PartidaRepository
 import com.example.flipgenius.model.CartaJogo
+import com.example.flipgenius.ui.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class JogoViewModel : ViewModel() {
+class JogoViewModel(context: Context, tema: String = "padrao") : ViewModel() {
+    
+    private val sessionManager = SessionManager(context.applicationContext)
+    private val db = AppDatabase.getInstance(context.applicationContext)
+    private val partidaRepository = PartidaRepository(db.partidaDao())
+    private val temaAtual = tema.ifBlank { "padrao" }
     
     private val _cartas = MutableStateFlow<List<CartaJogo>>(emptyList())
     val cartas: StateFlow<List<CartaJogo>> = _cartas.asStateFlow()
     
     private val _pontuacao = MutableStateFlow(0)
     val pontuacao: StateFlow<Int> = _pontuacao.asStateFlow()
+    
+    private val _tentativas = MutableStateFlow(0)
+    val tentativas: StateFlow<Int> = _tentativas.asStateFlow()
     
     private val _jogoFinalizado = MutableStateFlow(false)
     val jogoFinalizado: StateFlow<Boolean> = _jogoFinalizado.asStateFlow()
@@ -49,6 +62,7 @@ class JogoViewModel : ViewModel() {
         
         _cartas.value = cartasComIndices
         _pontuacao.value = 0
+        _tentativas.value = 0
         _jogoFinalizado.value = false
         cartasViradas = emptyList()
         podeVirar = true
@@ -73,6 +87,9 @@ class JogoViewModel : ViewModel() {
             // Se duas cartas estão viradas, verificar se são iguais
             if (cartasViradas.size == 2) {
                 podeVirar = false
+                // Incrementar tentativas
+                _tentativas.value = _tentativas.value + 1
+                
                 delay(1000) // Aguardar 1 segundo para o jogador ver as cartas
                 
                 val primeiraCarta = _cartas.value.find { it.id == cartasViradas[0] }
@@ -95,6 +112,7 @@ class JogoViewModel : ViewModel() {
                         val todasEncontradas = _cartas.value.all { it.encontrada }
                         if (todasEncontradas) {
                             _jogoFinalizado.value = true
+                            salvarPartida()
                         }
                     } else {
                         // Cartas diferentes - desvirar
@@ -114,5 +132,21 @@ class JogoViewModel : ViewModel() {
             }
         }
     }
+    
+    private fun salvarPartida() {
+        viewModelScope.launch {
+            val usuarioId = sessionManager.getUsuarioId()
+            if (usuarioId > 0) {
+                val partida = Partida(
+                    usuarioId = usuarioId,
+                    tema = temaAtual,
+                    tentativas = _tentativas.value
+                )
+                partidaRepository.salvarPartida(partida)
+            }
+        }
+    }
+    
+    fun getTema(): String = temaAtual
 }
 

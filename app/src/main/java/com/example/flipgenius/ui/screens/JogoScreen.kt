@@ -8,10 +8,12 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -23,15 +25,45 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.flipgenius.ui.components.CartaComponent
 import com.example.flipgenius.ui.viewmodels.JogoViewModel
+import com.example.flipgenius.ui.viewmodels.ConfigViewModel
+import com.example.flipgenius.ui.ViewModelFactory
 
 @Composable
 fun JogoScreen(
-    viewModel: JogoViewModel = viewModel(),
-    navController: NavHostController
+    viewModel: JogoViewModel,
+    navController: NavHostController,
+    configViewModel: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
 ) {
+    val context = LocalContext.current
     val cartas by viewModel.cartas.collectAsState()
     val pontuacao by viewModel.pontuacao.collectAsState()
+    val tentativas by viewModel.tentativas.collectAsState()
     val jogoFinalizado by viewModel.jogoFinalizado.collectAsState()
+    val configState by configViewModel.uiState.collectAsState()
+    val tema = viewModel.getTema()
+    
+    // Navegar para ResultadoScreen quando jogo finalizar
+    LaunchedEffect(jogoFinalizado, tentativas) {
+        if (jogoFinalizado && tentativas > 0) {
+            val temaNome = when (tema) {
+                "padrao" -> "Padrão"
+                "animais" -> "Animais"
+                "frutas" -> "Frutas"
+                "esportes" -> "Esportes"
+                "comidas" -> "Comidas"
+                else -> tema.ifBlank { "Padrão" }
+            }
+            // Substituir caracteres problemáticos na URL
+            val modoEncoded = "Clássico"
+            val tentativasEncoded = tentativas.toString()
+            val temaEncoded = temaNome.replace("/", "_").replace(" ", "_")
+            try {
+                navController.navigate("resultado/$modoEncoded/$tentativasEncoded/$temaEncoded")
+            } catch (e: Exception) {
+                // Ignorar erro de navegação duplicada
+            }
+        }
+    }
 
     val backgroundColor = Color(0xFF121212)
     val cardColor = Color(0xFF1E1E1E)
@@ -178,6 +210,13 @@ fun JogoScreen(
 @Preview(showBackground = true, backgroundColor = 0xFF121212)
 @Composable
 fun JogoScreenPreview() {
-    JogoScreen(navController = rememberNavController())
+    val context = LocalContext.current
+    val jogoVm = remember { 
+        com.example.flipgenius.ui.viewmodels.JogoViewModel(context, "padrao") 
+    }
+    JogoScreen(
+        viewModel = jogoVm,
+        navController = rememberNavController()
+    )
 }
 

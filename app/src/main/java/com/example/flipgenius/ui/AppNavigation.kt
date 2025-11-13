@@ -5,6 +5,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,6 +19,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.flipgenius.data.repository.ConfigRepository
 import com.example.flipgenius.ui.admin.DashboardAdminScreen
 import com.example.flipgenius.ui.auth.LoginScreen
@@ -29,6 +32,7 @@ import com.example.flipgenius.ui.screens.JogoScreen
 import com.example.flipgenius.ui.screens.PerfilScreen
 import com.example.flipgenius.ui.screens.RankingScreen
 import com.example.flipgenius.ui.viewmodels.ConfigViewModel
+import com.example.flipgenius.ui.viewmodels.JogoViewModel
 import com.example.flipgenius.ui.ViewModelFactory
 import kotlinx.coroutines.launch
 import com.example.flipgenius.data.local.AppDatabase
@@ -120,7 +124,19 @@ fun AppNavigation() {
                 EscolherTemaScreen(navController = navController, viewModel = vm)
             }
 
-            composable("jogo") { JogoScreen(navController = navController) }
+            composable("jogo") { 
+                val configVm: ConfigViewModel = viewModel(factory = ViewModelFactory.getFactory())
+                val configState by configVm.uiState.collectAsState()
+                val tema = configState.temaPreferido.ifBlank { "padrao" }
+                val jogoVm: JogoViewModel = viewModel(
+                    factory = ViewModelFactory.getJogoFactory(context, tema)
+                )
+                JogoScreen(
+                    viewModel = jogoVm,
+                    navController = navController,
+                    configViewModel = configVm
+                )
+            }
 
             composable("loginAdmin") {
                 // Reutiliza LoginScreen com tab Admin
@@ -135,7 +151,24 @@ fun AppNavigation() {
 
             composable("ranking") { RankingScreen(navController = navController) }
 
-            composable("resultado") { /* ResultadoScreen existente */ com.example.flipgenius.ui.screens.ResultadoScreen(navController = navController) }
+            composable(
+                route = "resultado/{modo}/{tentativas}/{tema}",
+                arguments = listOf(
+                    navArgument("modo") { type = NavType.StringType },
+                    navArgument("tentativas") { type = NavType.IntType },
+                    navArgument("tema") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val modo = backStackEntry.arguments?.getString("modo")?.replace("_", " ") ?: "Clássico"
+                val tentativas = backStackEntry.arguments?.getInt("tentativas") ?: 0
+                val tema = backStackEntry.arguments?.getString("tema")?.replace("_", " ") ?: "Padrão"
+                com.example.flipgenius.ui.screens.ResultadoScreen(
+                    navController = navController,
+                    modoJogo = modo,
+                    resultado = tentativas,
+                    tema = tema
+                )
+            }
 
             composable("timeAttackGame") { com.example.flipgenius.ui.screens.TimeAttackGameScreen(navController = navController) }
 
