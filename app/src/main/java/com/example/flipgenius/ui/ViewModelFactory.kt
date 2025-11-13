@@ -61,15 +61,8 @@ object ViewModelFactory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return when {
                 modelClass.isAssignableFrom(TimeAttackRankingViewModel::class.java) -> {
-<<<<<<< HEAD
-                    val db = AppDatabase.getInstance(context)
-                    val repo = TimeAttackRepository(db.timeAttackDao())
-                    val session = SessionManager(context.applicationContext)
-                    TimeAttackRankingViewModel(repo, session) as T
-=======
                     val repo = TimeAttackRepository.create()
                     TimeAttackRankingViewModel(repo) as T
->>>>>>> 20f133e (FIREBASE)
                 }
                 else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
             }
